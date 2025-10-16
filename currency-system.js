@@ -29,7 +29,7 @@
                     let remainingDeficit = ppDeficit * GAME_CONFIG.PP_TO_GP - GP;
                     GP = 0;
                     
-                    // 尝试用SP换GP (1GP = 10SP)
+                    // 尝试用SP换GP (1GP = 100SP)
                     if (SP >= remainingDeficit * GAME_CONFIG.GP_TO_SP) {
                         SP -= remainingDeficit * GAME_CONFIG.GP_TO_SP;
                         PP = 0;
@@ -38,7 +38,7 @@
                         remainingDeficit = remainingDeficit * GAME_CONFIG.GP_TO_SP - SP;
                         SP = 0;
                         
-                        // 尝试用CP换SP (1SP = 10CP)
+                        // 尝试用CP换SP (1SP = 100CP)
                         if (CP >= remainingDeficit * GAME_CONFIG.SP_TO_CP) {
                             CP -= remainingDeficit * GAME_CONFIG.SP_TO_CP;
                             PP = 0;
@@ -67,7 +67,7 @@
                     let remainingDeficit = gpDeficit - PP * GAME_CONFIG.PP_TO_GP;
                     PP = 0;
                     
-                    // 尝试用SP换GP (1GP = 10SP)
+                    // 尝试用SP换GP (1GP = 100SP)
                     if (SP >= remainingDeficit * GAME_CONFIG.GP_TO_SP) {
                         SP -= remainingDeficit * GAME_CONFIG.GP_TO_SP;
                         GP = 0;
@@ -76,7 +76,7 @@
                         remainingDeficit = remainingDeficit * GAME_CONFIG.GP_TO_SP - SP;
                         SP = 0;
                         
-                        // 尝试用CP换SP (1SP = 10CP)
+                        // 尝试用CP换SP (1SP = 100CP)
                         if (CP >= remainingDeficit * GAME_CONFIG.SP_TO_CP) {
                             CP -= remainingDeficit * GAME_CONFIG.SP_TO_CP;
                             GP = 0;
@@ -105,7 +105,7 @@
                     let remainingDeficit = spDeficit - PP * GAME_CONFIG.PP_TO_GP * GAME_CONFIG.GP_TO_SP;
                     PP = 0;
                     
-                    // 尝试用GP换SP (1GP = 10SP)
+                    // 尝试用GP换SP (1GP = 100SP)
                     if (GP >= Math.ceil(remainingDeficit / GAME_CONFIG.GP_TO_SP)) {
                         let gpNeeded = Math.ceil(remainingDeficit / GAME_CONFIG.GP_TO_SP);
                         GP -= gpNeeded;
@@ -115,7 +115,7 @@
                         remainingDeficit = remainingDeficit - GP * GAME_CONFIG.GP_TO_SP;
                         GP = 0;
                         
-                        // 尝试用CP换SP (1SP = 10CP)
+                        // 尝试用CP换SP (1SP = 100CP)
                         if (CP >= remainingDeficit * GAME_CONFIG.SP_TO_CP) {
                             CP -= remainingDeficit * GAME_CONFIG.SP_TO_CP;
                             SP = 0;
@@ -154,7 +154,7 @@
                         remainingDeficit = remainingDeficit - GP * GAME_CONFIG.GP_TO_SP * GAME_CONFIG.SP_TO_CP;
                         GP = 0;
                         
-                        // 尝试用SP换CP (1SP = 10CP)
+                        // 尝试用SP换CP (1SP = 100CP)
                         if (SP >= Math.ceil(remainingDeficit / GAME_CONFIG.SP_TO_CP)) {
                             let spNeeded = Math.ceil(remainingDeficit / GAME_CONFIG.SP_TO_CP);
                             SP -= spNeeded;
@@ -170,23 +170,10 @@
                 }
             }
             
-            return { deficit, currencyCleared };
         }
         
         // 执行按需换算
-        const result = handleCurrencyExchange();
-        
-        // 处理无法覆盖的情况
-        if (result.currencyCleared && result.deficit > 0) {
-            injectPrompts([{
-                id: 'currency_deficit',
-                content: `core_system:warning {{user}}货币不足,差值为${result.deficit}铜币,你需要通过红线系统助手提醒{{user}}并提醒{{user}}即使偿还`,
-                position: 'in_chat',
-                depth: 0,
-                role: 'system',
-                should_scan: true,
-            }]);
-        }
+        handleCurrencyExchange();
         
         // 更新货币值
         property.货币.白金币 = Math.max(0, Math.floor(PP));

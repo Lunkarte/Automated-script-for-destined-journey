@@ -12,6 +12,7 @@ function safeParseFloat(value) {
  * 解除注入的提示信息
  * @param {Array<string>} idsToRemove - 要移除的ID数组
  */
-function uninject(idsToRemove) {
+function uninject() {
+  const idsToRemove = ["AP+", "Location", "Time", "LV+"];
   uninjectPrompts(idsToRemove);
 }

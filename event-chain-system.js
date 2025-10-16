@@ -15,24 +15,9 @@ function event_chain(eventchain, world) {
       should_scan: true,
     },
   ]);
-  if (eventchain.开启 === "true") {
-    eventchain.开启 = true;
-  }
-  if (eventchain.开启 === "false") {
-    eventchain.开启 = false;
-  }
-  if (eventchain.结束 === "true") {
-    eventchain.结束 = true;
-  }
-  if (eventchain.结束 === "false") {
-    eventchain.结束 = false;
-  }
-  if (eventchain.琥珀事件 === "true") {
-    eventchain.琥珀事件 = true;
-  }
-  if (eventchain.琥珀事件 === "false") {
-    eventchain.琥珀事件 = false;
-  }
+eventchain.开启 = eventchain.开启 === "true" || eventchain.开启 === true;
+eventchain.结束 = eventchain.结束 === "true" || eventchain.结束 === true;
+eventchain.琥珀事件 = eventchain.琥珀事件 === "true" || eventchain.琥珀事件 === true;
   if (eventchain.开启 === true) {
     localStorage.setItem("event_chain_time", `${world.时间}`);
     // 清除之前的事件链注入

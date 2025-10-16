@@ -22,4 +22,3 @@ const GAME_CONFIG = {
     SP_TO_CP: 100,               // 银到铜
     AP_Acquisition_Level: 1,     // 每X级获得属性点
 };
-const idsToRemove = ["AP+", "Location", "Time", "LV+"];
