@@ -3,33 +3,37 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*'  # 当推送 v 开头的标签时触发（如 v1.0.0）
-  workflow_dispatch:  # 允许手动触发
+      - 'v*'  
+  workflow_dispatch:  
 
 permissions:
-  contents: write  # 需要写权限来创建 Release
+  contents: write  
 
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: 📥 检出代码
         uses: actions/checkout@v4
-        
+
       - name: 🔧 设置 Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          
-      - name: 📦 构建脚本
-        run: node build.js
-        
+          cache: 'npm' 
+
+      - name: 📦 安装依赖
+        run: npm install
+
+      - name: 🚀 构建脚本
+        run: npm run build 
+
       - name: 📊 显示构建信息
         run: |
           echo "构建完成！"
           ls -lh automated-script-for-destined-journey.js
-          
+
       - name: 🏷️ 提取版本号
         id: get_version
         run: |
@@ -40,20 +44,20 @@ jobs:
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "版本号: $VERSION"
-          
+
       - name: 📝 生成 Release 说明
         id: release_notes
         run: |
           BUILD_TIME=$(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M:%S %Z')
           cat > release-notes.md << EOF
           # 🎉 命定之旅自动化脚本
-          
+
           ---
 
           **构建时间**: ${BUILD_TIME}
           **提交哈希**: ${{ github.sha }}
           EOF
-          
+
       - name: 🚀 创建 Release
         uses: softprops/action-gh-release@v1
         with:
@@ -65,7 +69,7 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: ✅ 完成
         run: |
           echo "🎉 Release 创建成功！"

@@ -4,8 +4,7 @@
   "description": "命定的异世界开发之旅自动化脚本 - 用于处理角色升级、货币系统、事件链管理等游戏机制",
   "main": "main-controller.js",
   "scripts": {
-    "build": "node build.js",
-    "start": "node main-controller.js"
+    "build": "node build.js"
   },
   "keywords": [
     "game",
@@ -26,5 +25,11 @@
   "homepage": "https://github.com/Hilothea/Automated-script-for-destined-journey#readme",
   "engines": {
     "node": ">=14.0.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^24.8.1",
+    "fs-extra": "^11.3.2",
+    "typescript": "^5.9.3"
   }
 }
