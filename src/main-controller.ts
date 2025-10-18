@@ -4,6 +4,7 @@ import { experiencegrowth } from './experience-level';
 import { CurrencySystem } from './currency-system';
 import { inforead } from './info-injection';
 import { event_chain } from './event-chain-system';
+import { maintain } from './maintain';
 import { Lock_favorability } from './lock_HS';
 
 declare function eventOn(event: string, callback: (variables: Variables) => void): void;
@@ -21,6 +22,7 @@ function Main_processes(variables: Variables) {
     return;
   }
   // 按照顺序执行模块
+  maintain(user);
   //Lock_favorability(fatesystem);
   uninject();
   experiencegrowth(user);

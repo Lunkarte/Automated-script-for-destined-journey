@@ -15,7 +15,6 @@ export const JOB_LEVEL_XP_TABLE: { [key: number]: number } = {
 };
 // 核心游戏配置
 export const GAME_CONFIG = {
-    PP_TO_GP: 100,
     GP_TO_SP: 100,
     SP_TO_CP: 100,
     AP_Acquisition_Level: 1,

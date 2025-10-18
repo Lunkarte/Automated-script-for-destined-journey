@@ -5,6 +5,7 @@ const experience_level_1 = require("./experience-level");
 const currency_system_1 = require("./currency-system");
 const info_injection_1 = require("./info-injection");
 const event_chain_system_1 = require("./event-chain-system");
+const maintain_1 = require("./maintain");
 function Main_processes(variables) {
     const user = variables.stat_data.角色;
     const property = variables.stat_data.财产;
@@ -16,6 +17,7 @@ function Main_processes(variables) {
         return;
     }
     // 按照顺序执行模块
+    (0, maintain_1.maintain)(user);
     //Lock_favorability(fatesystem);
     (0, utils_1.uninject)();
     (0, experience_level_1.experiencegrowth)(user);

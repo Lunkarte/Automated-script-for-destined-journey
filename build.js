@@ -5,7 +5,8 @@ const { execSync } = require('child_process');
 const sourceFiles = [
   'utils.js',              // 工具函数（最先加载）
   'config.js',             // 配置
-  //'lock_HS.js',            // 好感度锁定
+  'maintain.js',
+  'lock_HS.js',            // 好感度锁定
   'experience-level.js',   // 经验与等级系统
   'currency-system.js',    // 货币系统
   'info-injection.js',     // 信息注入

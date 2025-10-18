@@ -13,11 +13,18 @@ export interface User {
         精神: number;
         属性点: number;
     };
+    资源: {
+      生命值上限: number;
+      生命值: number;
+      法力值上限: number;
+      法力值: number;
+      体力值上限: number;
+      体力值: number;
+    }
 }
 
 export interface Property {
     货币: {
-        白金币: number;
         金币: number;
         银币: number;
         铜币: number;
