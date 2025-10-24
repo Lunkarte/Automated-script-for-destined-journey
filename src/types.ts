@@ -46,7 +46,7 @@ export interface EventChain {
 }
 
 export interface FateSystem {
-  红线对象: {
+  命定之人: {
     [name: string]: {
       好感度: number;
     };
@@ -54,7 +54,7 @@ export interface FateSystem {
 }
 
 export interface FateSystemOld {
-  红线对象: {
+  命定之人: {
     [name: string]: {
       好感度: number;
     };
@@ -67,9 +67,9 @@ export interface Variables {
         财产: Property;
         世界: World;
         事件链: EventChain;
-        命运系统: FateSystem;
+        命定系统: FateSystem;
     };
     display_data: {
-        命运系统: FateSystemOld;
+        命定系统: FateSystemOld;
     }
 }

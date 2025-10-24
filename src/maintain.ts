@@ -13,8 +13,8 @@ export function maintain(user: User, fatesystem: FateSystem, fatesystemold: Fate
     user.属性.体质 = Math.min(Math.max(safeParseFloat(user.属性.体质), 0), 20)
     user.属性.智力 = Math.min(Math.max(safeParseFloat(user.属性.智力), 0), 20)
     user.属性.精神 = Math.min(Math.max(safeParseFloat(user.属性.精神), 0), 20)
-    const RedlineObject = fatesystem.红线对象
-    const RedlineObjectold = fatesystemold.红线对象
+    const RedlineObject = fatesystem.命定之人
+    const RedlineObjectold = fatesystemold.命定之人
     for (const name in RedlineObject) {
         const CurrentObject = RedlineObject[name];
         const CurrentFavorability = safeParseFloat(CurrentObject.好感度);
