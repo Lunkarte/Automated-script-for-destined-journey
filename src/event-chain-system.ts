@@ -4,6 +4,7 @@
  * @param {Object} world - 世界对象
  */
 import { EventChain, World } from './types';
+import { tobool } from './utils';
 
 declare function uninjectPrompts(ids: string[]): void;
 declare function injectPrompts(prompts: any[]): void;
@@ -12,6 +13,10 @@ declare function insertOrAssignVariables(variables: Record<string, any>, option:
 declare function deleteVariable(variable_path: string, option: { type: 'chat' | 'character' | 'preset' | 'global' }): { variables: Record<string, any>; delete_occurred: boolean };
 
 export function event_chain(eventchain: EventChain, world: World): void {
+  const star = tobool(eventchain.开启);
+  const end = tobool(eventchain.结束);
+  const recall_time = tobool(eventchain.琥珀事件);
+
   uninjectPrompts(["event_chain_end"]);
   injectPrompts([
     {
@@ -23,8 +28,7 @@ export function event_chain(eventchain: EventChain, world: World): void {
       should_scan: true,
     },
   ]);
-  if (eventchain.开启 == true) {
-    eventchain.开启 = true;
+  if (star === true) {
     deleteVariable("event_chain.time", { type: 'chat' });
     insertOrAssignVariables(
       { event_chain: { time: world.时间 } },
@@ -62,11 +66,9 @@ export function event_chain(eventchain: EventChain, world: World): void {
     ]);
   }
   // 检查是否结束事件链
-  if (eventchain.结束 == true) {
-    eventchain.结束 = true;
+  if (end === true) {
     const title = eventchain.标题;
-    if (eventchain.琥珀事件 == true) {
-      eventchain.琥珀事件 = true;
+    if (recall_time === true) {
       // 使用变量系统获取事件链时间
       const variables = getVariables({ type: 'chat' });
       const time = variables?.event_chain?.time;

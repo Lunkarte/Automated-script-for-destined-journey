@@ -1,8 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.event_chain = event_chain;
+const utils_1 = require("./utils");
 function event_chain(eventchain, world) {
     var _a;
+    const star = (0, utils_1.tobool)(eventchain.开启);
+    const end = (0, utils_1.tobool)(eventchain.结束);
+    const recall_time = (0, utils_1.tobool)(eventchain.琥珀事件);
     uninjectPrompts(["event_chain_end"]);
     injectPrompts([
         {
@@ -14,8 +18,7 @@ function event_chain(eventchain, world) {
             should_scan: true,
         },
     ]);
-    if (eventchain.开启 == true) {
-        eventchain.开启 = true;
+    if (star === true) {
         deleteVariable("event_chain.time", { type: 'chat' });
         insertOrAssignVariables({ event_chain: { time: world.时间 } }, { type: 'chat' });
         // 清除之前的事件链注入
@@ -47,11 +50,9 @@ function event_chain(eventchain, world) {
         ]);
     }
     // 检查是否结束事件链
-    if (eventchain.结束 == true) {
-        eventchain.结束 = true;
+    if (end === true) {
         const title = eventchain.标题;
-        if (eventchain.琥珀事件 == true) {
-            eventchain.琥珀事件 = true;
+        if (recall_time === true) {
             // 使用变量系统获取事件链时间
             const variables = getVariables({ type: 'chat' });
             const time = (_a = variables === null || variables === void 0 ? void 0 : variables.event_chain) === null || _a === void 0 ? void 0 : _a.time;

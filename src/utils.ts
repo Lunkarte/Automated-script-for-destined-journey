@@ -16,3 +16,12 @@ export function uninject(): void {
   const idsToRemove = ["AP+", "Location", "Time", "LV+"];
   uninjectPrompts(idsToRemove);
 }
+export function tobool(value: any): boolean {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+  if (typeof value === 'string') {
+    return value.toLowerCase() === 'true';
+  }
+  return Boolean(value);
+}

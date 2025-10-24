@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.safeParseFloat = safeParseFloat;
 exports.uninject = uninject;
+exports.tobool = tobool;
 /**
  * 安全的浮点数解析函数
  * @param {*} value - 要解析的值
@@ -18,4 +19,13 @@ function safeParseFloat(value) {
 function uninject() {
     const idsToRemove = ["AP+", "Location", "Time", "LV+"];
     uninjectPrompts(idsToRemove);
+}
+function tobool(value) {
+    if (typeof value === 'boolean') {
+        return value;
+    }
+    if (typeof value === 'string') {
+        return value.toLowerCase() === 'true';
+    }
+    return Boolean(value);
 }

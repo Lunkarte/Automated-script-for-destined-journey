@@ -40,6 +40,15 @@ function uninject() {
     const idsToRemove = ["AP+", "Location", "Time", "LV+"];
     uninjectPrompts(idsToRemove);
 }
+function tobool(value) {
+    if (typeof value === 'boolean') {
+        return value;
+    }
+    if (typeof value === 'string') {
+        return value.toLowerCase() === 'true';
+    }
+    return Boolean(value);
+}
 
 // ============================================================
 // config.js
@@ -78,8 +87,8 @@ function maintain(user, fatesystem, fatesystemold) {
     user.属性.体质 = Math.min(Math.max(safeParseFloat(user.属性.体质), 0), 20);
     user.属性.智力 = Math.min(Math.max(safeParseFloat(user.属性.智力), 0), 20);
     user.属性.精神 = Math.min(Math.max(safeParseFloat(user.属性.精神), 0), 20);
-    const RedlineObject = fatesystem.红线对象;
-    const RedlineObjectold = fatesystemold.红线对象;
+    const RedlineObject = fatesystem.命定之人;
+    const RedlineObjectold = fatesystemold.命定之人;
     for (const name in RedlineObject) {
         const CurrentObject = RedlineObject[name];
         const CurrentFavorability = safeParseFloat(CurrentObject.好感度);
@@ -375,6 +384,9 @@ function inforead(world) {
 // ============================================================
 function event_chain(eventchain, world) {
     var _a;
+    const star = tobool(eventchain.开启);
+    const end = tobool(eventchain.结束);
+    const recall_time = tobool(eventchain.琥珀事件);
     uninjectPrompts(["event_chain_end"]);
     injectPrompts([
         {
@@ -386,8 +398,7 @@ function event_chain(eventchain, world) {
             should_scan: true,
         },
     ]);
-    if (eventchain.开启 == true) {
-        eventchain.开启 = true;
+    if (star === true) {
         deleteVariable("event_chain.time", { type: 'chat' });
         insertOrAssignVariables({ event_chain: { time: world.时间 } }, { type: 'chat' });
         // 清除之前的事件链注入
@@ -419,11 +430,9 @@ function event_chain(eventchain, world) {
         ]);
     }
     // 检查是否结束事件链
-    if (eventchain.结束 == true) {
-        eventchain.结束 = true;
+    if (end === true) {
         const title = eventchain.标题;
-        if (eventchain.琥珀事件 == true) {
-            eventchain.琥珀事件 = true;
+        if (recall_time === true) {
             // 使用变量系统获取事件链时间
             const variables = getVariables({ type: 'chat' });
             const time = (_a = variables === null || variables === void 0 ? void 0 : variables.event_chain) === null || _a === void 0 ? void 0 : _a.time;
@@ -452,8 +461,8 @@ function Main_processes(variables) {
     const property = variables.stat_data.财产;
     const world = variables.stat_data.世界;
     const eventchain = variables.stat_data.事件链;
-    const fatesystem = variables.stat_data.命运系统;
-    const fatesystemold = ((_a = variables.display_data) === null || _a === void 0 ? void 0 : _a.命运系统) || {};
+    const fatesystem = variables.stat_data.命定系统;
+    const fatesystemold = ((_a = variables.display_data) === null || _a === void 0 ? void 0 : _a.命定系统) || {};
     if (!user || !property || !world || !eventchain || !fatesystem) {
         console.error("Core data missing, script terminated");
         return;
