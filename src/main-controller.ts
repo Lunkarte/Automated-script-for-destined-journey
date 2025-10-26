@@ -29,6 +29,19 @@ function Main_processes(variables: Variables) {
   inforead(world);
   event_chain(eventchain, world);
 }
+
+function Event_chain_only(variables: Variables) {
+  const world = variables.stat_data.世界;
+  const eventchain = variables.stat_data.事件链;
+
+  if (!world || !eventchain) {
+    console.error("Event chain data missing, script terminated");
+    return;
+  }
+  event_chain(eventchain, world);
+}
+
 // ============================ [事件监听] ============================
 eventOn('mag_variable_update_ended', Main_processes);
+eventOn('GENERATION_AFTER_COMMANDS', Event_chain_only);
 eventOnButton('重新处理变量', Main_processes);

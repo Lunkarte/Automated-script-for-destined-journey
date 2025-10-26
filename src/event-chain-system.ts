@@ -11,7 +11,6 @@ declare function injectPrompts(prompts: any[]): void;
 declare function getVariables(option: { type: 'chat' | 'character' | 'preset' | 'global' }): Record<string, any>;
 declare function insertOrAssignVariables(variables: Record<string, any>, option: { type: 'chat' | 'character' | 'preset' | 'global' }): Record<string, any>;
 declare function deleteVariable(variable_path: string, option: { type: 'chat' | 'character' | 'preset' | 'global' }): { variables: Record<string, any>; delete_occurred: boolean };
-declare function getLastMessageId(): number;
 
 export function event_chain(eventchain: EventChain, world: World): void {
   const star = tobool(eventchain.开启);
@@ -30,18 +29,18 @@ export function event_chain(eventchain: EventChain, world: World): void {
     },
   ]);
   if (star === true) {
-    if(!variables?.event_chain?.time){
-    insertOrAssignVariables(
-      { event_chain: { time: world.时间 } },
-      { type: 'chat' }
-    );};
+    if (!variables?.event_chain?.time) {
+      insertOrAssignVariables(
+        { event_chain: { time: world.时间 } },
+        { type: 'chat' }
+      );
+    };
     const title = eventchain.标题;
     const step = eventchain.阶段;
-    const counter = getLastMessageId();
     // 注入当前事件链状态
     injectPrompts([
       {
-        id: `event_chain${counter}`,
+        id: `event_chain`,
         content: `当前事件为${title}，当前步骤为${step}`,
         position: "none",
         depth: 0,
@@ -71,6 +70,7 @@ export function event_chain(eventchain: EventChain, world: World): void {
         world.时间 = time;
       }
     }
+    uninjectPrompts([`event_chain`]);
     uninjectPrompts([`event_chain_tips`]);
     eventchain.已完成事件.push(`已完成事件${title}`);
     eventchain.标题 = "";
