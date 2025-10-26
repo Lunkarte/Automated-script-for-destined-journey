@@ -16,7 +16,7 @@ export function event_chain(eventchain: EventChain, world: World): void {
   const star = tobool(eventchain.开启);
   const end = tobool(eventchain.结束);
   const recall_time = tobool(eventchain.琥珀事件);
-
+  const variables = getVariables({ type: 'chat' });
   uninjectPrompts(["event_chain_end"]);
   injectPrompts([
     {
@@ -29,22 +29,23 @@ export function event_chain(eventchain: EventChain, world: World): void {
     },
   ]);
   if (star === true) {
-    deleteVariable("event_chain.time", { type: 'chat' });
+    if(!variables.event_chain.time){
     insertOrAssignVariables(
       { event_chain: { time: world.时间 } },
       { type: 'chat' }
-    );
-    // 清除之前的事件链注入
-    uninjectPrompts(["event_chain"]);
-    uninjectPrompts(["event_chain_tips"]);
-
+    );};
+    if(!variables.event_chain.counter){
+    insertOrAssignVariables(
+      { event_chain: { counter: 1 } },
+      { type: 'chat' }
+    );};
+    let counter = variables?.event_chain?.counter;
     const title = eventchain.标题;
     const step = eventchain.阶段;
-
     // 注入当前事件链状态
     injectPrompts([
       {
-        id: "event_chain",
+        id: `event_chain${counter}`,
         content: `当前事件为${title}，当前步骤为${step}`,
         position: "none",
         depth: 0,
@@ -52,11 +53,10 @@ export function event_chain(eventchain: EventChain, world: World): void {
         should_scan: true,
       },
     ]);
-
     // 注入事件链激活提示
     injectPrompts([
       {
-        id: "event_chain_tips",
+        id: `event_chain_tips${counter}`,
         content: `core_system:The event chain has been activated, please note<event_chain>`,
         position: "in_chat",
         depth: 0,
@@ -64,20 +64,30 @@ export function event_chain(eventchain: EventChain, world: World): void {
         should_scan: true,
       },
     ]);
-  }
+    counter++;
+    insertOrAssignVariables(
+      { event_chain: { counter: counter } },
+      { type: 'chat' }
+    );
+  };
   // 检查是否结束事件链
   if (end === true) {
     const title = eventchain.标题;
     if (recall_time === true) {
       // 使用变量系统获取事件链时间
-      const variables = getVariables({ type: 'chat' });
       const time = variables?.event_chain?.time;
-      if (time !== undefined && time !== null) {
+      if (time !== null) {
         world.时间 = time;
       }
     }
-    uninjectPrompts(["event_chain"]);
-    uninjectPrompts(["event_chain_tips"]);
+    // 获取当前 counter 值以移除对应的 prompts
+    const counter = variables?.event_chain?.counter;
+    if (counter !== null) {
+      for (let i = 1; i < counter; i++) {
+        uninjectPrompts([`event_chain${i}`]);
+        uninjectPrompts([`event_chain_tips${i}`]);
+      }
+    }
     eventchain.已完成事件.push(`已完成事件${title}`);
     eventchain.标题 = "";
     eventchain.阶段 = "";
@@ -85,5 +95,6 @@ export function event_chain(eventchain: EventChain, world: World): void {
     eventchain.开启 = false;
     eventchain.琥珀事件 = false;
     deleteVariable("event_chain.time", { type: 'chat' });
+    deleteVariable("event_chain.counter", { type: 'chat' });
   }
 }
