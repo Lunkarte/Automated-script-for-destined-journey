@@ -11,6 +11,7 @@ declare function injectPrompts(prompts: any[]): void;
 declare function getVariables(option: { type: 'chat' | 'character' | 'preset' | 'global' }): Record<string, any>;
 declare function insertOrAssignVariables(variables: Record<string, any>, option: { type: 'chat' | 'character' | 'preset' | 'global' }): Record<string, any>;
 declare function deleteVariable(variable_path: string, option: { type: 'chat' | 'character' | 'preset' | 'global' }): { variables: Record<string, any>; delete_occurred: boolean };
+declare function getLastMessageId(): number;
 
 export function event_chain(eventchain: EventChain, world: World): void {
   const star = tobool(eventchain.开启);
@@ -34,9 +35,9 @@ export function event_chain(eventchain: EventChain, world: World): void {
       { event_chain: { time: world.时间 } },
       { type: 'chat' }
     );};
-    let counter = variables?.event_chain?.counter || 1;
     const title = eventchain.标题;
     const step = eventchain.阶段;
+    const counter = getLastMessageId();
     // 注入当前事件链状态
     injectPrompts([
       {
@@ -59,11 +60,6 @@ export function event_chain(eventchain: EventChain, world: World): void {
         should_scan: true,
       },
     ]);
-    counter++;
-    insertOrAssignVariables(
-      { event_chain: { counter: counter } },
-      { type: 'chat' }
-    );
   };
   // 检查是否结束事件链
   if (end === true) {
@@ -75,14 +71,7 @@ export function event_chain(eventchain: EventChain, world: World): void {
         world.时间 = time;
       }
     }
-    // 获取当前 counter 值以移除对应的 prompts
-    const counter = variables?.event_chain?.counter;
-    if (counter !== null) {
-      for (let i = 1; i < counter; i++) {
-        uninjectPrompts([`event_chain${i}`]);
-        uninjectPrompts([`event_chain_tips${i}`]);
-      }
-    }
+    uninjectPrompts([`event_chain_tips`]);
     eventchain.已完成事件.push(`已完成事件${title}`);
     eventchain.标题 = "";
     eventchain.阶段 = "";
@@ -90,6 +79,5 @@ export function event_chain(eventchain: EventChain, world: World): void {
     eventchain.开启 = false;
     eventchain.琥珀事件 = false;
     deleteVariable("event_chain.time", { type: 'chat' });
-    deleteVariable("event_chain.counter", { type: 'chat' });
   }
 }
