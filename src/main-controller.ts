@@ -8,7 +8,7 @@ import { maintain } from './maintain';
 
 declare function eventOn(event: string, callback: (variables: Variables) => void): void;
 declare function eventOnButton(button: string, callback: (variables: Variables) => void): void;
-
+declare const tavern_events: {  GENERATION_AFTER_COMMANDS: 'GENERATION_AFTER_COMMANDS';};
 function Main_processes(variables: Variables) {
   const user = variables.stat_data.角色;
   const property = variables.stat_data.财产;
@@ -43,5 +43,5 @@ function Event_chain_only(variables: Variables) {
 
 // ============================ [事件监听] ============================
 eventOn('mag_variable_update_ended', Main_processes);
-eventOn('GENERATION_AFTER_COMMANDS', Event_chain_only);
+eventOn(tavern_events.GENERATION_AFTER_COMMANDS, Event_chain_only);
 eventOnButton('重新处理变量', Main_processes);
