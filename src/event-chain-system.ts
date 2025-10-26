@@ -56,7 +56,7 @@ export function event_chain(eventchain: EventChain, world: World): void {
     // 注入事件链激活提示
     injectPrompts([
       {
-        id: `event_chain_tips${counter}`,
+        id: "event_chain_tips",
         content: `core_system:The event chain has been activated, please note<event_chain>`,
         position: "in_chat",
         depth: 0,
