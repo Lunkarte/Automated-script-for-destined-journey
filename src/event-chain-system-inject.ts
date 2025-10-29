@@ -7,7 +7,7 @@ type VariableOptionNormal = {
 
 export function event_chain_inject() {
   const variables = getVariables({ type: 'message', message_id: -2 });
-  if (variables.event_chain.completed_events !== null) {
+  if (variables.event_chain.completed_events) {
     const completed_events = variables.event_chain.completed_events
     injectPrompts([
       {
@@ -20,7 +20,7 @@ export function event_chain_inject() {
       },
     ]);
   }
-  if (variables.event_chain.cache !== null) {
+  if (variables.event_chain.cache) {
     const Prompts = variables.event_chain.cache
     injectPrompts([
       {

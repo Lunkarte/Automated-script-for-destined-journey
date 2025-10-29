@@ -7,12 +7,13 @@ declare function injectPrompts(prompts: any[]): void;
  * @param {Object} world - 世界对象
  */
 export function inforead(world: World, fatesystem: FateSystem, user: User): void {
-  const RedlineObject = fatesystem.命定之人
   let RedlineObjectSpecies = []
+  if(fatesystem.命定之人){
+  const RedlineObject = fatesystem.命定之人
   for (const name in RedlineObject) {
     const CurrentObject = RedlineObject[name];
     RedlineObjectSpecies.push(CurrentObject.种族);
-  }
+  }}
   injectPrompts([
     {
       id: "RedlineObjectSpecies",
