@@ -13,22 +13,23 @@
     "rpg",
     "character-management"
   ],
-  "author": "Hilothea",
+  "author": "The-poem-of-destiny",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Hilothea/Automated-script-for-destined-journey.git"
+    "url": "git+https://github.com/The-poem-of-destiny/Automated-script-for-destined-journey.git"
   },
   "bugs": {
-    "url": "https://github.com/Hilothea/Automated-script-for-destined-journey/issues"
+    "url": "https://github.com/The-poem-of-destiny/Automated-script-for-destined-journey/issues"
   },
-  "homepage": "https://github.com/Hilothea/Automated-script-for-destined-journey#readme",
+  "homepage": "https://github.com/The-poem-of-destiny/Automated-script-for-destined-journey#readme",
   "engines": {
     "node": ">=14.0.0"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^24.8.1",
+    "esbuild": "^0.25.11",
     "fs-extra": "^11.3.2",
     "typescript": "^5.9.3"
   }

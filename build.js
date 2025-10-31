@@ -1,117 +1,142 @@
 const fs = require('fs-extra');
-const path = require('path');
 const { execSync } = require('child_process');
+const path = require('path');
+const esbuild = require('esbuild');
 
-const sourceFiles = [
-  'utils.js',              // 工具函数（最先加载）
-  'config.js',             // 配置
-  'maintain.js',
-  'experience-level.js',   // 经验与等级系统
-  'currency-system.js',    // 货币系统
-  'info-injection.js',     // 信息注入
-  'event-chain-system-current.js', // 事件链系统
-  'event-chain-system-inject.js', // 事件链系统
-  'main-controller.js'     // 主控制器（最后加载）
-];
+// 颜色输出
+const colors = {
+  reset: '\x1b[0m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  red: '\x1b[31m',
+  cyan: '\x1b[36m'
+};
 
-const outputFile = 'automated-script-for-destined-journey.js';
-const tsconfigPath = path.join(__dirname, 'tsconfig.json');
-const outDir = 'dist';
-function generateHeader() {
-  const now = new Date();
-  const dateStr = now.toISOString().split('T')[0];
-  
-  return `/**
- * Automated Script for Destined Journey
- * 命定之旅自动化脚本
- * 
- * @version ${getVersion()}
- * @date ${dateStr}
- * @license MIT
- * 
- * 这是一个自动生成的合并文件，包含以下模块：
- * ${sourceFiles.map(f => `- ${f}`).join('\n')}
- */`;
-}
-function getVersion() {
-  try {
-    const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf-8'));
-    return packageJson.version || '1.0.0';
-  } catch (e) {
-    const now = new Date();
-    return `${now.getFullYear()}.${now.getMonth() + 1}.${now.getDate()}`;
-  }
+function log(message, color = 'reset') {
+  console.log(`${colors[color]}${message}${colors.reset}`);
 }
 
 async function build() {
-  console.log('🚀 开始构建...');
-  console.log('📦 正在编译 TypeScript...');
-  execSync(`npx tsc`);
-
-  const contents = [];
-  
-  for (const file of sourceFiles) {
-    const jsFile = file.replace('.ts', '.js');
-    const filePath = path.join(__dirname, outDir, jsFile);
-    if (fs.existsSync(filePath)) {
-        console.log(`📄 读取: ${jsFile}`);
-        let content = await fs.readFile(filePath, 'utf-8');
-        
-        // 移除 "use strict" 声明（因为外层已经有了）
-        content = content.replace(/["']use strict["'];?\n?/g, '');
-        
-        // 移除 Object.defineProperty(exports, "__esModule", { value: true });
-        content = content.replace(/Object\.defineProperty\(exports,\s*"__esModule",\s*\{\s*value:\s*true\s*\}\);?\n?/g, '');
-        
-        // 移除 exports.XXX = exports.YYY = ... = void 0; 这样的链式声明
-        content = content.replace(/exports\.\w+\s*=\s*exports\.\w+\s*=.*?void\s+0;?\n?/g, '');
-        
-        // 完全移除所有 require 语句（因为所有模块都在同一作用域）
-        content = content.replace(/const\s+\w+\s*=\s*require\(["']\.\/[\w-]+["']\);?\n?/g, '');
-        
-        // 将 exports.XXX = { ... }; 转换为 const XXX = { ... };（支持多行对象）
-        content = content.replace(/exports\.(\w+)\s*=\s*(\{[\s\S]*?\};?)/g, 'const $1 = $2');
-        
-        // 移除剩余的简单 exports.xxx = xxx; 形式的导出
-        content = content.replace(/exports\.\w+\s*=\s*\w+;?\n?/g, '');
-        
-        // 将 (0, xxx.yyy) 形式的调用改为直接调用 yyy
-        content = content.replace(/\(0,\s*\w+\.(\w+)\)/g, '$1');
-        
-        // 将 xxx.yyy 形式的引用改为直接引用 yyy（仅针对已知的导入模块）
-        content = content.replace(/\butils_1\.(\w+)/g, '$1');
-        content = content.replace(/\bconfig_1\.(\w+)/g, '$1');
-        content = content.replace(/\bmaintain_1\.(\w+)/g, '$1');
-        content = content.replace(/\bexperience_level_1\.(\w+)/g, '$1');
-        content = content.replace(/\bcurrency_system_1\.(\w+)/g, '$1');
-        content = content.replace(/\binfo_injection_1\.(\w+)/g, '$1');
-        content = content.replace(/\bevent_chain_system_current_1\.(\w+)/g, '$1');
-        content = content.replace(/\bevent_chain_system_inject_1\.(\w+)/g, '$1');
-        
-        // 清理多余的空行
-        content = content.replace(/\n{3,}/g, '\n\n');
-        
-        contents.push(`// ============================================================`);
-        contents.push(`// ${file}`);
-        contents.push(`// ============================================================`);
-        contents.push(content.trim());
-        contents.push('');
-    } else {
-        console.warn(`⚠️  文件不存在: ${jsFile}`);
+  try {
+    log('🚀 开始构建项目...', 'cyan');
+    
+    // 1. 清理dist目录
+    log('\n📦 清理构建目录...', 'yellow');
+    if (fs.existsSync('dist')) {
+      await fs.remove('dist');
+      log('✓ 已清理 dist 目录', 'green');
     }
+    
+    // 2. 使用 esbuild 打包和编译 TypeScript
+    log('\n🔨 打包和编译 TypeScript...', 'yellow');
+    try {
+      const packageJson = require('./package.json');
+      const now = new Date();
+      const buildDate = now.toISOString().split('T')[0];
+      const buildTime = now.toTimeString().split(' ')[0];
+      
+      // 构建文件头部注释
+      const banner = `// ============================================================
+// Automated Script for Destined Journey
+// 命定的异世界开发之旅自动化脚本
+// ============================================================
+// Version: ${packageJson.version}
+// Build Date: ${buildDate} ${buildTime}
+// Author: ${packageJson.author}
+// License: ${packageJson.license}
+// Repository: ${packageJson.repository.url}
+// ============================================================
+`;
+      
+      await esbuild.build({
+        entryPoints: ['src/main-controller.ts'],
+        bundle: true,
+        outfile: 'dist/automated-script-for-destined-journey.js',
+        platform: 'browser',
+        format: 'iife',
+        target: 'es2020',
+        minify: false,
+        sourcemap: false,
+        banner: {
+          js: banner
+        }
+      });
+      log('✓ TypeScript 打包编译完成', 'green');
+      log(`  构建日期: ${buildDate} ${buildTime}`, 'cyan');
+    } catch (error) {
+      log('✗ TypeScript 打包编译失败', 'red');
+      throw error;
+    }
+    
+    // 3. 复制必要的文件
+    log('\n📋 复制必要文件...', 'yellow');
+    const filesToCopy = [
+      'package.json',
+      'README.md',
+      'LICENSE',
+      'DOC.md'
+    ];
+    
+    for (const file of filesToCopy) {
+      if (fs.existsSync(file)) {
+        await fs.copy(file, path.join('dist', file));
+        log(`✓ 已复制 ${file}`, 'green');
+      }
+    }
+    
+    // 4. 创建简化的package.json用于发布
+    log('\n📝 创建发布版 package.json...', 'yellow');
+    const packageJson = await fs.readJson('package.json');
+    const distPackageJson = {
+      name: packageJson.name,
+      version: packageJson.version,
+      description: packageJson.description,
+      main: 'automated-script-for-destined-journey.js',
+      keywords: packageJson.keywords,
+      author: packageJson.author,
+      license: packageJson.license,
+      repository: packageJson.repository,
+      bugs: packageJson.bugs,
+      homepage: packageJson.homepage,
+      engines: packageJson.engines
+    };
+    
+    await fs.writeJson(path.join('dist', 'package.json'), distPackageJson, { spaces: 2 });
+    log('✓ 已创建发布版 package.json', 'green');
+    
+    // 5. 显示构建统计
+    log('\n📊 构建统计:', 'cyan');
+    const distFiles = await fs.readdir('dist');
+    const jsFiles = distFiles.filter(f => f.endsWith('.js'));
+    log(`  - JavaScript 文件: ${jsFiles.length}`, 'green');
+    log(`  - 总文件数: ${distFiles.length}`, 'green');
+    
+    // 6. 计算构建大小
+    const mainScriptPath = path.join('dist', 'automated-script-for-destined-journey.js');
+    if (fs.existsSync(mainScriptPath)) {
+      const stats = await fs.stat(mainScriptPath);
+      log(`  - 主脚本大小: ${(stats.size / 1024).toFixed(2)} KB`, 'green');
+    }
+    
+    let totalSize = 0;
+    for (const file of distFiles) {
+      const filePath = path.join('dist', file);
+      const stats = await fs.stat(filePath);
+      if (stats.isFile()) {
+        totalSize += stats.size;
+      }
+    }
+    log(`  - 总大小: ${(totalSize / 1024).toFixed(2)} KB`, 'green');
+    
+    log('\n✨ 构建完成！', 'green');
+    log(`📁 输出目录: ${path.resolve('dist')}`, 'cyan');
+    
+  } catch (error) {
+    log('\n❌ 构建失败！', 'red');
+    console.error(error);
+    process.exit(1);
   }
-
-  const header = generateHeader();
-  const mergedContent = contents.join('\n');
-  const finalContent = `${header}\n\n(function() {\n  'use strict';\n\n${mergedContent}\n\n})();`;
-
-  await fs.writeFile(path.join(__dirname, outputFile), finalContent, 'utf-8');
-
-  console.log(`\n✅ 构建完成！`);
-  console.log(`📦 输出文件: ${outputFile}`);
 }
 
-build().catch(error => {
-  console.error('❌ 构建失败:', error);
-  process.exit(1);
-});
+// 执行构建
+build();

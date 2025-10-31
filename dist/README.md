@@ -1,0 +1,21 @@
+# 命定的异世界开发之旅自动化脚本
+
+## 概述
+- 脚本内的注释是Claude写的与作者本人无关,下面的也是
+
+## 文档
+点击 [此处](./DOC.md) 查看具体相关信息。
+
+## 许可证
+
+本项目采用 MIT 许可证。详见 [LICENSE](./LICENSE) 文件。
+
+---
+
+## 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+<a href="https://github.com/Hilothea/Automated-script-for-destined-journey/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Hilothea/Automated-script-for-destined-journey" />
+</a>
