@@ -32,7 +32,17 @@ jobs:
       - name: 📊 显示构建信息
         run: |
           echo "构建完成！"
-          ls -lh automated-script-for-destined-journey.js
+          ls -lh dist
+
+      - name: 🚀 提交构建文件到 dist 目录
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add dist
+          git commit -m "chore: build and commit dist folder"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🏷️ 提取版本号
         id: get_version
@@ -61,7 +71,7 @@ jobs:
       - name: 🚀 创建 Release
         uses: softprops/action-gh-release@v1
         with:
-          files: automated-script-for-destined-journey.js
+          files: dist/*
           body_path: release-notes.md
           name: Release ${{ steps.get_version.outputs.version }}
           tag_name: ${{ steps.get_version.outputs.version }}
