@@ -3,7 +3,7 @@
 // 命定的异世界开发之旅自动化脚本
 // ============================================================
 // Version: 1.1.4
-// Build Date: 2025-10-31 15:59:55
+// Build Date: 2025-11-01 15:47:07
 // Author: The-poem-of-destiny
 // License: MIT
 // Repository: git+https://github.com/The-poem-of-destiny/Automated-script-for-destined-journey.git
@@ -343,6 +343,7 @@
       eventchain.\u5F00\u542F = false;
       eventchain.\u7425\u73C0\u4E8B\u4EF6 = false;
       deleteVariable("event_chain.time", { type: "chat" });
+      deleteVariable("event_chain.cache", { type: "message" });
     }
   }
 

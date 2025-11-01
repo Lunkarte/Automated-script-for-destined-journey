@@ -49,5 +49,6 @@ export function event_chain(eventchain: EventChain, world: World): void {
     eventchain.开启 = false;
     eventchain.琥珀事件 = false;
     deleteVariable("event_chain.time", { type: 'chat' });
+    deleteVariable("event_chain.cache", { type: 'message' });
   }
 }
