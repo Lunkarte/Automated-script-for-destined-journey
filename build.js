@@ -55,6 +55,7 @@ async function build() {
         platform: 'browser',
         format: 'iife',
         target: 'es2020',
+        charset: 'utf8',
         minify: false,
         sourcemap: false,
         banner: {
