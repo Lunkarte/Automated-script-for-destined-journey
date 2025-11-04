@@ -60,6 +60,7 @@ async function build() {
         banner: {
           js: banner
         }
+        charset: 'utf8',
       });
       log('✓ TypeScript 打包编译完成', 'green');
       log(`  构建日期: ${buildDate} ${buildTime}`, 'cyan');
