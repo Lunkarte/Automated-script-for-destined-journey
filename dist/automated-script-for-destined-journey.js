@@ -3,7 +3,7 @@
 // 命定的异世界开发之旅自动化脚本
 // ============================================================
 // Version: 1.1.4
-// Build Date: 2025-11-12 12:44:41
+// Build Date: 2025-11-13 03:13:54
 // Author: The-poem-of-destiny
 // License: MIT
 // Repository: git+https://github.com/The-poem-of-destiny/Automated-script-for-destined-journey.git
@@ -46,7 +46,7 @@
     22: 25041,
     23: 27161,
     24: 31e3,
-    25: 1145141919810
+    25: Infinity
   };
   var GAME_CONFIG = {
     GP_TO_SP: 100,
@@ -207,7 +207,7 @@
     const title = eventchain.标题;
     const step = eventchain.阶段;
     const completed_events = eventchain.已完成事件;
-    const variables = getVariables({ type: "chat" });
+    const variables = getVariables({ type: "message" });
     uninjectPrompts(["completed_events"]);
     insertOrAssignVariables(
       { event_chain: { completed_events } },
@@ -217,7 +217,7 @@
       if (variables?.event_chain?.time !== null) {
         insertOrAssignVariables(
           { event_chain: { time: world.时间 } },
-          { type: "chat" }
+          { type: "message" }
         );
       }
       ;
@@ -242,7 +242,7 @@
       eventchain.结束 = false;
       eventchain.开启 = false;
       eventchain.琥珀事件 = false;
-      deleteVariable("event_chain.time", { type: "chat" });
+      deleteVariable("event_chain.time", { type: "message" });
       deleteVariable("event_chain.cache", { type: "message" });
     }
   }
@@ -250,19 +250,17 @@
   // src/event-chain-system-inject.ts
   function event_chain_inject() {
     const variables = getVariables({ type: "message", message_id: -2 });
-    if (variables.event_chain.completed_events) {
-      const completed_events = variables.event_chain.completed_events;
-      injectPrompts([
-        {
-          id: "event_chain_end",
-          content: completed_events,
-          position: "none",
-          depth: 0,
-          role: "system",
-          should_scan: true
-        }
-      ]);
-    }
+    const completed_events = variables.event_chain.completed_events;
+    injectPrompts([
+      {
+        id: "completed_events",
+        content: completed_events,
+        position: "none",
+        depth: 0,
+        role: "system",
+        should_scan: true
+      }
+    ]);
     if (variables.event_chain.cache) {
       const Prompts = variables.event_chain.cache;
       injectPrompts([
@@ -293,7 +291,7 @@
     const currentLevel = user.状态.等级;
     let hasLeveledUp = false;
     while (safeParseFloat(user.状态.累计经验值) >= safeParseFloat(user.状态.升级所需经验)) {
-      if (!JOB_LEVEL_XP_TABLE[user.状态.等级] || safeParseFloat(user.状态.累计经验值) >= 1145141919810) {
+      if (!JOB_LEVEL_XP_TABLE[user.状态.等级]) {
         break;
       }
       user.状态.等级 = safeParseFloat(user.状态.等级) + 1;
