@@ -7,19 +7,17 @@ type VariableOptionNormal = {
 
 export function event_chain_inject() {
   const variables = getVariables({ type: 'message', message_id: -2 });
-  if (variables.event_chain.completed_events) {
-    const completed_events = variables.event_chain.completed_events;
-    injectPrompts([
-      {
-        id: 'event_chain_end',
-        content: completed_events,
-        position: 'none',
-        depth: 0,
-        role: 'system',
-        should_scan: true,
-      },
-    ]);
-  }
+  const completed_events = variables.event_chain.completed_events;
+  injectPrompts([
+    {
+      id: 'completed_events',
+      content: completed_events,
+      position: 'none',
+      depth: 0,
+      role: 'system',
+      should_scan: true,
+    },
+  ]);
   if (variables.event_chain.cache) {
     const Prompts = variables.event_chain.cache;
     injectPrompts([

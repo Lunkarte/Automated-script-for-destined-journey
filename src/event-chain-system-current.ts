@@ -17,7 +17,7 @@ export function event_chain(eventchain: EventChain, world: World): void {
   const title = eventchain.标题;
   const step = eventchain.阶段;
   const completed_events = eventchain.已完成事件;
-  const variables = getVariables({ type: 'chat' });
+  const variables = getVariables({ type: 'message' });
   uninjectPrompts(["completed_events"]);
   insertOrAssignVariables(
     { event_chain: { completed_events: completed_events } },
@@ -26,7 +26,7 @@ export function event_chain(eventchain: EventChain, world: World): void {
     if (variables?.event_chain?.time !== null) {
       insertOrAssignVariables(
         { event_chain: { time: world.时间 } },
-        { type: 'chat' }
+        { type: 'message' }
       );
     };
     insertOrAssignVariables(
@@ -48,7 +48,7 @@ export function event_chain(eventchain: EventChain, world: World): void {
     eventchain.结束 = false;
     eventchain.开启 = false;
     eventchain.琥珀事件 = false;
-    deleteVariable("event_chain.time", { type: 'chat' });
+    deleteVariable("event_chain.time", { type: 'message' });
     deleteVariable("event_chain.cache", { type: 'message' });
   }
 }
