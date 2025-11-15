@@ -15,12 +15,12 @@ declare const tavern_events: {
 };
 function Main_processes(variables: Variables) {
   const user = variables.stat_data.角色;
-  const property = variables.stat_data.财产;
+  const currency = variables.stat_data.货币;
   const world = variables.stat_data.世界;
   const eventchain = variables.stat_data.事件链;
   const fatesystem = variables.stat_data.命定系统;
 
-  if (!user || !property || !world || !eventchain || !fatesystem) {
+  if (!user || !currency || !world || !eventchain || !fatesystem) {
     console.error('Core data missing, script terminated');
     return;
   }
@@ -28,7 +28,7 @@ function Main_processes(variables: Variables) {
   maintain(user, fatesystem);
   uninject();
   experiencegrowth(user);
-  CurrencySystem(property);
+  CurrencySystem(currency);
   inforead(world, fatesystem, user);
   event_chain(eventchain, world);
   event_chain_inject();

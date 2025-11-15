@@ -9,22 +9,22 @@ import { safeParseFloat } from './utils';
 declare function injectPrompts(prompts: any[]): void;
 
 export function experiencegrowth(user: User): void {
-  const currentLevel = user.状态.等级;
+  const currentLevel = user.等级;
   let hasLeveledUp = false;
   // 升级处理循环
   while (
-    safeParseFloat(user.状态.累计经验值) >=
-    safeParseFloat(user.状态.升级所需经验)
+    safeParseFloat(user.累计经验值) >=
+    safeParseFloat(user.升级所需经验)
   ) {
-    if (!JOB_LEVEL_XP_TABLE[user.状态.等级]) {
+    if (!JOB_LEVEL_XP_TABLE[user.等级]) {
       break;
     }
 
-    user.状态.等级 = safeParseFloat(user.状态.等级) + 1;
+    user.等级 = safeParseFloat(user.等级) + 1;
     hasLeveledUp = true;
-    user.状态.升级所需经验 = JOB_LEVEL_XP_TABLE[user.状态.等级];
+    user.升级所需经验 = JOB_LEVEL_XP_TABLE[user.等级];
     // 检查是否获得属性点
-    if (user.状态.等级 % GAME_CONFIG.AP_Acquisition_Level === 0) {
+    if (user.等级 % GAME_CONFIG.AP_Acquisition_Level === 0) {
       user.属性.属性点 = safeParseFloat(user.属性.属性点) + 1;
       injectPrompts([
         {
@@ -39,14 +39,14 @@ export function experiencegrowth(user: User): void {
       ]);
     }
     // 检查里程碑等级
-    const milestone = MILESTONE_LEVELS[user.状态.等级];
+    const milestone = MILESTONE_LEVELS[user.等级];
     if (milestone) {
       user.属性.力量 = safeParseFloat(user.属性.力量) + milestone.strength;
       user.属性.敏捷 = safeParseFloat(user.属性.敏捷) + milestone.agility;
       user.属性.体质 = safeParseFloat(user.属性.体质) + milestone.constitution;
       user.属性.智力 = safeParseFloat(user.属性.智力) + milestone.intelligence;
       user.属性.精神 = safeParseFloat(user.属性.精神) + milestone.spirit;
-      user.状态.生命层级 = milestone.tier;
+      user.生命层级 = milestone.tier;
     }
   }
   // 如果升级了，注入升级提示
@@ -57,7 +57,7 @@ export function experiencegrowth(user: User): void {
         position: "in_chat",
         role: "system",
         depth: 0,
-        content: `core_system: The {{user}} level increased from ${currentLevel} to ${user.状态.等级}`,
+        content: `core_system: The {{user}} level increased from ${currentLevel} to ${user.等级}`,
         should_scan: true,
       },
     ]);

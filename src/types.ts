@@ -1,11 +1,15 @@
 export interface User {
   种族: string;
-  状态: {
-    等级: number;
-    升级所需经验: number;
-    累计经验值: number;
-    生命层级: string;
-  };
+  等级: number;
+  升级所需经验: number;
+  累计经验值: number;
+  生命层级: string;
+  生命值上限: number;
+  生命值: number;
+  法力值上限: number;
+  法力值: number;
+  体力值上限: number;
+  体力值: number;
   属性: {
     力量: number;
     敏捷: number;
@@ -14,22 +18,12 @@ export interface User {
     精神: number;
     属性点: number;
   };
-  资源: {
-    生命值上限: number;
-    生命值: number;
-    法力值上限: number;
-    法力值: number;
-    体力值上限: number;
-    体力值: number;
-  };
 }
 
-export interface Property {
-  货币: {
-    金币: number;
-    银币: number;
-    铜币: number;
-  };
+export interface Currency {
+  金币: number;
+  银币: number;
+  铜币: number;
 }
 
 export interface World {
@@ -66,7 +60,7 @@ export interface FateSystemOld {
 export interface Variables {
   stat_data: {
     角色: User;
-    财产: Property;
+    货币: Currency;
     世界: World;
     事件链: EventChain;
     命定系统: FateSystem;

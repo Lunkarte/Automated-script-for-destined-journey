@@ -1,4 +1,4 @@
-import { Property } from './types';
+import { Currency } from './types';
 import { GAME_CONFIG } from './config';
 import { safeParseFloat } from './utils';
 /**
@@ -6,12 +6,12 @@ import { safeParseFloat } from './utils';
  * 当某种货币被扣成负数时，自动从更高层级的货币中换算抵扣
  * 如果所有货币都不足，则产生欠债（负CP）
  * 
- * @param {Object} property - 财产对象，包含货币信息
+ * @param {Object} currency - 货币对象，包含货币信息
  */
-export function CurrencySystem(property: Property): void {
-    let GP = safeParseFloat(property.货币.金币);
-    let SP = safeParseFloat(property.货币.银币);
-    let CP = safeParseFloat(property.货币.铜币);
+export function CurrencySystem(currency: Currency): void {
+    let GP = safeParseFloat(currency.金币);
+    let SP = safeParseFloat(currency.银币);
+    let CP = safeParseFloat(currency.铜币);
 
     function handleCurrencyExchange() {
         let currencyCleared = false;
@@ -182,7 +182,7 @@ export function CurrencySystem(property: Property): void {
 
     handleCurrencyExchange();
 
-    property.货币.金币 = Math.max(0, Math.floor(GP));
-    property.货币.银币 = Math.max(0, Math.floor(SP));
-    property.货币.铜币 = Math.floor(CP);
+    currency.金币 = Math.max(0, Math.floor(GP));
+    currency.银币 = Math.max(0, Math.floor(SP));
+    currency.铜币 = Math.floor(CP);
 }
