@@ -3,7 +3,7 @@
 // 命定的异世界开发之旅自动化脚本
 // ============================================================
 // Version: 1.1.4
-// Build Date: 2025-11-13 03:13:54
+// Build Date: 2025-11-24 03:43:08
 // Author: The-poem-of-destiny
 // License: MIT
 // Repository: git+https://github.com/The-poem-of-destiny/Automated-script-for-destined-journey.git
@@ -74,10 +74,10 @@
   }
 
   // src/currency-system.ts
-  function CurrencySystem(property) {
-    let GP = safeParseFloat(property.货币.金币);
-    let SP = safeParseFloat(property.货币.银币);
-    let CP = safeParseFloat(property.货币.铜币);
+  function CurrencySystem(currency) {
+    let GP = safeParseFloat(currency.金币);
+    let SP = safeParseFloat(currency.银币);
+    let CP = safeParseFloat(currency.铜币);
     function handleCurrencyExchange() {
       let currencyCleared = false;
       if (GP < 0 && !currencyCleared) {
@@ -194,9 +194,9 @@
       }
     }
     handleCurrencyExchange();
-    property.货币.金币 = Math.max(0, Math.floor(GP));
-    property.货币.银币 = Math.max(0, Math.floor(SP));
-    property.货币.铜币 = Math.floor(CP);
+    currency.金币 = Math.max(0, Math.floor(GP));
+    currency.银币 = Math.max(0, Math.floor(SP));
+    currency.铜币 = Math.floor(CP);
   }
 
   // src/event-chain-system-current.ts
@@ -288,16 +288,16 @@
 
   // src/experience-level.ts
   function experiencegrowth(user) {
-    const currentLevel = user.状态.等级;
+    const currentLevel = user.等级;
     let hasLeveledUp = false;
-    while (safeParseFloat(user.状态.累计经验值) >= safeParseFloat(user.状态.升级所需经验)) {
-      if (!JOB_LEVEL_XP_TABLE[user.状态.等级]) {
+    while (safeParseFloat(user.累计经验值) >= safeParseFloat(user.升级所需经验)) {
+      if (!JOB_LEVEL_XP_TABLE[user.等级]) {
         break;
       }
-      user.状态.等级 = safeParseFloat(user.状态.等级) + 1;
+      user.等级 = safeParseFloat(user.等级) + 1;
       hasLeveledUp = true;
-      user.状态.升级所需经验 = JOB_LEVEL_XP_TABLE[user.状态.等级];
-      if (user.状态.等级 % GAME_CONFIG.AP_Acquisition_Level === 0) {
+      user.升级所需经验 = JOB_LEVEL_XP_TABLE[user.等级];
+      if (user.等级 % GAME_CONFIG.AP_Acquisition_Level === 0) {
         user.属性.属性点 = safeParseFloat(user.属性.属性点) + 1;
         injectPrompts([
           {
@@ -310,14 +310,14 @@
           }
         ]);
       }
-      const milestone = MILESTONE_LEVELS[user.状态.等级];
+      const milestone = MILESTONE_LEVELS[user.等级];
       if (milestone) {
         user.属性.力量 = safeParseFloat(user.属性.力量) + milestone.strength;
         user.属性.敏捷 = safeParseFloat(user.属性.敏捷) + milestone.agility;
         user.属性.体质 = safeParseFloat(user.属性.体质) + milestone.constitution;
         user.属性.智力 = safeParseFloat(user.属性.智力) + milestone.intelligence;
         user.属性.精神 = safeParseFloat(user.属性.精神) + milestone.spirit;
-        user.状态.生命层级 = milestone.tier;
+        user.生命层级 = milestone.tier;
       }
     }
     if (hasLeveledUp) {
@@ -327,7 +327,7 @@
           position: "in_chat",
           role: "system",
           depth: 0,
-          content: `core_system: The {{user}} level increased from ${currentLevel} to ${user.状态.等级}`,
+          content: `core_system: The {{user}} level increased from ${currentLevel} to ${user.等级}`,
           should_scan: true
         }
       ]);
@@ -388,9 +388,9 @@
 
   // src/maintain.ts
   function maintain(user, fatesystem) {
-    user.资源.生命值 = Math.min(Math.max(safeParseFloat(user.资源.生命值), 0), safeParseFloat(user.资源.生命值上限));
-    user.资源.法力值 = Math.min(Math.max(safeParseFloat(user.资源.法力值), 0), safeParseFloat(user.资源.法力值上限));
-    user.资源.体力值 = Math.min(Math.max(safeParseFloat(user.资源.体力值), 0), safeParseFloat(user.资源.体力值上限));
+    user.生命值 = Math.min(Math.max(safeParseFloat(user.生命值), 0), safeParseFloat(user.生命值上限));
+    user.法力值 = Math.min(Math.max(safeParseFloat(user.法力值), 0), safeParseFloat(user.法力值上限));
+    user.体力值 = Math.min(Math.max(safeParseFloat(user.体力值), 0), safeParseFloat(user.体力值上限));
     user.属性.力量 = Math.min(Math.max(safeParseFloat(user.属性.力量), 0), 20);
     user.属性.敏捷 = Math.min(Math.max(safeParseFloat(user.属性.敏捷), 0), 20);
     user.属性.体质 = Math.min(Math.max(safeParseFloat(user.属性.体质), 0), 20);
@@ -401,13 +401,13 @@
       const CurrentObject = RedlineObject[name];
       CurrentObject.好感度 = Math.max(-100, Math.min(CurrentObject.好感度, 100));
     }
-    user.状态.等级 = Math.max(0, Math.min(user.状态.等级, 25));
-    user.状态.升级所需经验 = JOB_LEVEL_XP_TABLE[user.状态.等级];
-    const currentLevel = user.状态.等级;
+    user.等级 = Math.max(0, Math.min(user.等级, 25));
+    user.升级所需经验 = JOB_LEVEL_XP_TABLE[user.等级];
+    const currentLevel = user.等级;
     if (currentLevel > 0) {
       const requiredXpForPreviousLevel = JOB_LEVEL_XP_TABLE[currentLevel - 1];
-      if (safeParseFloat(user.状态.累计经验值) < requiredXpForPreviousLevel) {
-        user.状态.累计经验值 = requiredXpForPreviousLevel;
+      if (safeParseFloat(user.累计经验值) < requiredXpForPreviousLevel) {
+        user.累计经验值 = requiredXpForPreviousLevel;
       }
     }
   }
@@ -415,18 +415,18 @@
   // src/main-controller.ts
   function Main_processes(variables) {
     const user = variables.stat_data.角色;
-    const property = variables.stat_data.财产;
+    const currency = variables.stat_data.货币;
     const world = variables.stat_data.世界;
     const eventchain = variables.stat_data.事件链;
     const fatesystem = variables.stat_data.命定系统;
-    if (!user || !property || !world || !eventchain || !fatesystem) {
+    if (!user || !currency || !world || !eventchain || !fatesystem) {
       console.error("Core data missing, script terminated");
       return;
     }
     maintain(user, fatesystem);
     uninject();
     experiencegrowth(user);
-    CurrencySystem(property);
+    CurrencySystem(currency);
     inforead(world, fatesystem, user);
     event_chain(eventchain, world);
     event_chain_inject();
