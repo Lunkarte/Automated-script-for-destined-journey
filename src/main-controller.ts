@@ -21,17 +21,51 @@ function Main_processes(variables: Variables) {
   const fatesystem = variables.stat_data.命定系统;
 
   if (!user || !currency || !world || !eventchain || !fatesystem) {
-    console.error('Core data missing, script terminated');
+    console.error('核心数据缺失，脚本终止。缺失项:', {
+      用户数据: !!user,
+      货币系统: !!currency,
+      世界数据: !!world,
+      事件链: !!eventchain,
+      命定系统: !!fatesystem
+    });
     return;
   }
   // 按照顺序执行模块
-  maintain(user, fatesystem);
-  uninject();
-  experiencegrowth(user);
-  CurrencySystem(currency);
-  inforead(world, fatesystem, user);
-  event_chain(eventchain, world);
-  event_chain_inject();
+  try {
+    maintain(user, fatesystem);
+  } catch (error) {
+    console.error('执行 maintain 模块时出错', error);
+  }
+  try {
+    uninject();
+  } catch (error) {
+    console.error('执行 uninject 模块时出错', error);
+  }
+  try {
+    experiencegrowth(user);
+  } catch (error) {
+    console.error('执行 experiencegrowth 模块时出错', error);
+  }
+  try {
+    CurrencySystem(currency);
+  } catch (error) {
+    console.error('执行 CurrencySystem 模块时出错', error);
+  }
+  try {
+    inforead(world, fatesystem, user);
+  } catch (error) {
+    console.error('执行 inforead 模块时出错', error);
+  }
+  try {
+    event_chain(eventchain, world);
+  } catch (error) {
+    console.error('执行 event_chain 模块时出错', error);
+  }
+  try {
+    event_chain_inject();
+  } catch (error) {
+    console.error('执行 event_chain_inject 模块时出错', error);
+  }
 }
 
 // ============================ [事件监听] ============================
