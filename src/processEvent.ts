@@ -12,7 +12,7 @@ export function processEvent(variables: Variables, old_variables: Variables): vo
   uninjectPrompts(["completed_events"]);
   insertOrAssignVariables({ event: { completed_events: completed_events } }, { type: "message" });
   if (star === true) {
-    if (variables?.date?.event?.time !== null) {
+    if (variables?.date?.event?.time === null || variables?.date?.event?.time === undefined) {
       insertOrAssignVariables({ event: { time: world.时间 } }, { type: "message" });
     }
     insertOrAssignVariables({ event: { cache: `当前事件为${title}，当前步骤为${step}` } }, { type: "message" });

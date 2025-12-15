@@ -5,7 +5,7 @@ export function injectGameInfo(variables: Variables, old_variables: Variables): 
   const user = variables.stat_data.角色;
   const fatesystem = variables.stat_data.命定系统;
 
-  let redline_object_species = [];
+  let redline_object_species: string[] = [];
   if (fatesystem.命定之人) {
     const redline_object = fatesystem.命定之人;
     for (const name in redline_object) {

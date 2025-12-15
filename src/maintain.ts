@@ -8,7 +8,7 @@ export function maintain(variables: Variables, old_variables: Variables) {
   } else {
     variables.stat_data.登神长阶.是否开启 = true;
   }
-  if (user.等级 !== 1) {
+  if (user.等级 !== 1 && old_variables?.stat_data?.角色?.等级) {
     user.等级 = old_variables.stat_data.角色.等级;
   }
   user.升级所需经验 = LEVEL_XP_TABLE[user.等级];
