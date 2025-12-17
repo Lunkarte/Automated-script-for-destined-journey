@@ -3,7 +3,7 @@
 // 命定的异世界开发之旅自动化脚本
 // ============================================================
 // Version: 1.1.4
-// Build Date: 2025-12-17 09:16:49
+// Build Date: 2025-12-17 12:38:45
 // Author: The-poem-of-destiny
 // License: MIT
 // Repository: git+https://github.com/The-poem-of-destiny/Automated-script-for-destined-journey.git
@@ -439,9 +439,12 @@
       console.error("执行 injectEventPrompts 模块时出错", error);
     }
   }
-  eventOn("mag_variable_update_ended", mainProcesses);
-  eventOn(tavern_events.GENERATION_AFTER_COMMANDS, injectEventPrompts);
-  eventOn(tavern_events.MESSAGE_SENT, injectEventPrompts);
-  eventOn(tavern_events.MESSAGE_UPDATED, injectEventPrompts);
-  eventOnButton("重新处理变量", mainProcesses);
+  (async () => {
+    await waitGlobalInitialized("Mvu");
+    eventOn("mag_variable_update_ended", mainProcesses);
+    eventOn(tavern_events.GENERATION_AFTER_COMMANDS, injectEventPrompts);
+    eventOn(tavern_events.MESSAGE_SENT, injectEventPrompts);
+    eventOn(tavern_events.MESSAGE_UPDATED, injectEventPrompts);
+    eventOn(getButtonEvent("重新处理变量"), mainProcesses);
+  })();
 })();
