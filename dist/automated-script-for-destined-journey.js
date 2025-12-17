@@ -3,7 +3,7 @@
 // 命定的异世界开发之旅自动化脚本
 // ============================================================
 // Version: 1.1.4
-// Build Date: 2025-12-15 08:47:03
+// Build Date: 2025-12-17 09:16:49
 // Author: The-poem-of-destiny
 // License: MIT
 // Repository: git+https://github.com/The-poem-of-destiny/Automated-script-for-destined-journey.git
@@ -14,7 +14,7 @@
   // src/injectEventPrompts.ts
   function injectEventPrompts() {
     const variables = getVariables({ type: "message", message_id: -2 });
-    const completed_events = variables?.date?.event?.completed_events || {};
+    const completed_events = variables?.date?.event?.completed_events;
     injectPrompts([
       {
         id: "completed_events",
@@ -51,7 +51,7 @@
   }
 
   // src/injectGameInfo.ts
-  function injectGameInfo(variables, old_variables) {
+  function injectGameInfo(variables) {
     const world = variables.stat_data.世界;
     const user = variables.stat_data.角色;
     const fatesystem = variables.stat_data.命定系统;
@@ -149,14 +149,15 @@
   };
 
   // src/maintain.ts
-  function maintain(variables, old_variables) {
+  function maintain(variables) {
+    const old_variables = Mvu.getMvuData({ type: "message", message_id: -2 }) || {};
     const user = variables.stat_data.角色;
     if (user.等级 < 13) {
       variables.stat_data.登神长阶.是否开启 = false;
     } else {
       variables.stat_data.登神长阶.是否开启 = true;
     }
-    if (user.等级 !== 1 && old_variables?.stat_data?.角色?.等级) {
+    if (old_variables.stat_data.角色.等级 !== 1) {
       user.等级 = old_variables.stat_data.角色.等级;
     }
     user.升级所需经验 = LEVEL_XP_TABLE[user.等级];
@@ -177,7 +178,7 @@
   }
 
   // src/processCurrencyExchange.ts
-  function processCurrencyExchange(variables, old_variables) {
+  function processCurrencyExchange(variables) {
     const currency = variables.stat_data.货币;
     let GP = currency.金币;
     let SP = currency.银币;
@@ -304,7 +305,7 @@
   }
 
   // src/processEvent.ts
-  function processEvent(variables, old_variables) {
+  function processEvent(variables) {
     const world = variables.stat_data.世界;
     const event = variables.stat_data.事件链;
     const star = event.开启;
@@ -314,17 +315,17 @@
     const step = event.阶段;
     const completed_events = event.已完成事件;
     uninjectPrompts(["completed_events"]);
-    insertOrAssignVariables({ event: { completed_events } }, { type: "message" });
+    insertOrAssignVariables({ date: { event: { completed_events } } }, { type: "message" });
     if (star === true) {
       if (variables?.date?.event?.time === null || variables?.date?.event?.time === void 0) {
-        insertOrAssignVariables({ event: { time: world.时间 } }, { type: "message" });
+        insertOrAssignVariables({ date: { event: { time: world.时间 } } }, { type: "message" });
       }
-      insertOrAssignVariables({ event: { cache: `当前事件为${title}，当前步骤为${step}` } }, { type: "message" });
+      insertOrAssignVariables({ date: { event: { cache: `当前事件为${title}，当前步骤为${step}` } } }, { type: "message" });
     }
     if (end === true) {
       if (recall_time === true) {
         const time = variables?.date?.event?.time;
-        if (time !== null) {
+        if (time) {
           world.时间 = time;
         }
       }
@@ -342,7 +343,7 @@
   }
 
   // src/processExperienceAndLevel.ts
-  function processExperienceAndLevel(variables, old_variables) {
+  function processExperienceAndLevel(variables) {
     const user = variables.stat_data.角色;
     const current_level = user.等级;
     let has_leveled_up = false;
@@ -397,15 +398,13 @@
   }
 
   // src/main-controller.ts
-  function mainProcesses() {
-    const variables = getVariables({ type: "message" });
-    const old_variables = getVariables({ type: "message", message_id: -2 }) || {};
+  function mainProcesses(variables) {
     if (!variables || !variables.stat_data) {
       console.error("无法获取变量数据，脚本终止。");
       return;
     }
     try {
-      maintain(variables, old_variables);
+      maintain(variables);
     } catch (error) {
       console.error("执行 maintain 模块时出错", error);
     }
@@ -415,22 +414,22 @@
       console.error("执行 uninject 模块时出错", error);
     }
     try {
-      processExperienceAndLevel(variables, old_variables);
+      processExperienceAndLevel(variables);
     } catch (error) {
       console.error("执行 processExperienceAndLevel 模块时出错", error);
     }
     try {
-      processCurrencyExchange(variables, old_variables);
+      processCurrencyExchange(variables);
     } catch (error) {
       console.error("执行 processCurrencyExchange 模块时出错", error);
     }
     try {
-      injectGameInfo(variables, old_variables);
+      injectGameInfo(variables);
     } catch (error) {
       console.error("执行 injectGameInfo 模块时出错", error);
     }
     try {
-      processEvent(variables, old_variables);
+      processEvent(variables);
     } catch (error) {
       console.error("执行 processEvent 模块时出错", error);
     }
