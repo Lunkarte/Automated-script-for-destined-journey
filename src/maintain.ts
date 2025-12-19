@@ -2,7 +2,7 @@ import { LEVEL_XP_TABLE, MILESTONE_LEVELS } from "./config";
 import { Variables } from "./types";
 
 export function maintain(variables: Variables) {
-  const old_variables = Mvu.getMvuData({ type: "message", message_id: -2 }) || {};
+  const old_variables = getVariables({ type: "message", message_id: -2 }) || {};
   const user = variables.stat_data.角色;
   if (user.等级 < 13) {
     variables.stat_data.登神长阶.是否开启 = false;
