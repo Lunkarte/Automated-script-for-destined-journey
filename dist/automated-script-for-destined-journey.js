@@ -3,7 +3,7 @@
 // 命定的异世界开发之旅自动化脚本
 // ============================================================
 // Version: 1.1.4
-// Build Date: 2025-12-19 14:22:49
+// Build Date: 2025-12-19 16:10:29
 // Author: The-poem-of-destiny
 // License: MIT
 // Repository: git+https://github.com/The-poem-of-destiny/Automated-script-for-destined-journey.git
@@ -152,7 +152,7 @@
 
   // src/maintain.ts
   function maintain(variables) {
-    const old_variables = Mvu.getMvuData({ type: "message", message_id: -2 }) || {};
+    const old_variables = getVariables({ type: "message", message_id: -2 }) || {};
     const user = variables.stat_data.角色;
     if (user.等级 < 13) {
       variables.stat_data.登神长阶.是否开启 = false;
