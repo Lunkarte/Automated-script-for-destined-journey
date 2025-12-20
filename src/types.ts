@@ -244,5 +244,6 @@ export interface Variables {
         required_exp: number;
       };
     };
+    requiresContractForExp: boolean;
   };
 }

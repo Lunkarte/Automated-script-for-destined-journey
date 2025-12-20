@@ -8,7 +8,7 @@ export function processNPCExperienceAndLevel(variables: Variables) {
   let has_leveled_up = false;
   const redline_object = variables.stat_data.命定系统.命定之人;
   const date_redline_object = getVariables({ type: "message" }).date.npcs;
-
+  let requiresContractForExp = getVariables({ type: "message" }).date.requiresContractForExp || true;
   // 计算主角经验增量
   const old_exp = old_variables?.stat_data?.角色?.累计经验值 || variables.stat_data.角色.累计经验值;
   const delta_exp = variables.stat_data.角色.累计经验值 - old_exp || 0;
@@ -33,8 +33,14 @@ export function processNPCExperienceAndLevel(variables: Variables) {
         current_object.exp = required_xp_for_previous_level;
       }
     }
-    if (redline_object[name].是否在场 && delta_exp > 0) {
-      current_object.exp = current_object.exp + delta_exp;
+    if (requiresContractForExp) {
+      if (redline_object[name].是否在场 && delta_exp > 0 && redline_object[name].是否缔结契约) {
+        current_object.exp = current_object.exp + delta_exp;
+      }
+    } else {
+      if (redline_object[name].是否在场 && delta_exp > 0) {
+        current_object.exp = current_object.exp + delta_exp;
+      }
     }
     while (current_object.exp >= current_object.required_exp) {
       if (!LEVEL_XP_TABLE[current_object.level]) {
