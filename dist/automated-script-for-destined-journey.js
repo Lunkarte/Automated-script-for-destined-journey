@@ -3,7 +3,7 @@
 // 命定的异世界开发之旅自动化脚本
 // ============================================================
 // Version: 1.1.4
-// Build Date: 2025-12-19 16:10:29
+// Build Date: 2025-12-20 17:34:42
 // Author: The-poem-of-destiny
 // License: MIT
 // Repository: git+https://github.com/The-poem-of-destiny/Automated-script-for-destined-journey.git
@@ -395,6 +395,77 @@
     }
   }
 
+  // src/processNPCExperienceAndLevel.ts
+  function processNPCExperienceAndLevel(variables) {
+    const old_variables = getVariables({ type: "message", message_id: -2 }) || {};
+    uninjectPrompts(["NPC_LV+"]);
+    let Prompts = [];
+    let has_leveled_up = false;
+    const redline_object = variables.stat_data.命定系统.命定之人;
+    const date_redline_object = getVariables({ type: "message" }).date.npcs;
+    let requiresContractForExp = getVariables({ type: "message" }).date.requiresContractForExp || true;
+    const old_exp = old_variables?.stat_data?.角色?.累计经验值 || variables.stat_data.角色.累计经验值;
+    const delta_exp = variables.stat_data.角色.累计经验值 - old_exp || 0;
+    for (const name in redline_object) {
+      const current_object = redline_object[name];
+      insertVariables({ date: { npcs: { [name]: { level: current_object.等级, exp: 0, required_exp: 0 } } } }, { type: "message" });
+    }
+    for (const name in date_redline_object) {
+      if (!(name in redline_object)) {
+        deleteVariable(`date.npcs.${name}`, { type: "message" });
+      }
+    }
+    for (const name in date_redline_object) {
+      const current_object = date_redline_object[name];
+      current_object.level = redline_object[name].等级;
+      current_object.required_exp = LEVEL_XP_TABLE[current_object.level];
+      if (current_object.level > 0) {
+        const required_xp_for_previous_level = LEVEL_XP_TABLE[current_object.level - 1];
+        if (current_object.exp < required_xp_for_previous_level) {
+          current_object.exp = required_xp_for_previous_level;
+        }
+      }
+      if (requiresContractForExp) {
+        if (redline_object[name].是否在场 && delta_exp > 0 && redline_object[name].是否缔结契约) {
+          current_object.exp = current_object.exp + delta_exp;
+        }
+      } else {
+        if (redline_object[name].是否在场 && delta_exp > 0) {
+          current_object.exp = current_object.exp + delta_exp;
+        }
+      }
+      while (current_object.exp >= current_object.required_exp) {
+        if (!LEVEL_XP_TABLE[current_object.level]) {
+          break;
+        }
+        current_object.level++;
+        has_leveled_up = true;
+        current_object.required_exp = LEVEL_XP_TABLE[current_object.level];
+      }
+      if (redline_object[name].等级 < current_object.level) {
+        has_leveled_up = true;
+        Prompts.push(`${name}从LV${redline_object[name].等级}提升到LV${current_object.level};`);
+        redline_object[name].等级 = current_object.level;
+      }
+      insertOrAssignVariables(
+        { date: { npcs: { [name]: { level: current_object.level, exp: current_object.exp, required_exp: current_object.required_exp } } } },
+        { type: "message" }
+      );
+    }
+    if (has_leveled_up) {
+      injectPrompts([
+        {
+          id: "NPC_LV+",
+          content: `core_system: ${Prompts.join("")}`,
+          position: "none",
+          depth: 0,
+          role: "system",
+          should_scan: true
+        }
+      ]);
+    }
+  }
+
   // src/utils.ts
   function uninject() {
     const idsToRemove = ["AP+", "LV+", "Location", "Time", "RedlineObjectSpecies", "UserSpecies"];
@@ -406,6 +477,9 @@
     if (!variables || !variables.stat_data) {
       console.error("无法获取变量数据，脚本终止。");
       return;
+    }
+    if (!variables.date.npcs) {
+      insertVariables({ date: { npcs: {} } }, { type: "message" });
     }
     try {
       maintain(variables);
@@ -431,6 +505,11 @@
       injectGameInfo(variables);
     } catch (error) {
       console.error("执行 injectGameInfo 模块时出错", error);
+    }
+    try {
+      processNPCExperienceAndLevel(variables);
+    } catch (error) {
+      console.error("执行 processNPCExperienceAndLevel 模块时出错", error);
     }
     try {
       processEvent(variables);
