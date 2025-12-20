@@ -13,7 +13,9 @@ function mainProcesses(variables: Variables) {
     console.error("无法获取变量数据，脚本终止。");
     return;
   }
-
+  if (!variables.date.npcs) {
+    insertVariables({ date: { npcs: {} } }, { type: "message" });
+  }
   try {
     maintain(variables);
   } catch (error) {
