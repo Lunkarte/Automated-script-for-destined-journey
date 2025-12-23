@@ -98,6 +98,13 @@ export default defineConfig(({ mode }) => ({
       },
     },
     minify: 'terser',
+    terserOptions: {
+      // 确保确定性输出
+      mangle: {
+        // 禁用属性混淆
+        properties: false,
+      },
+    },
     sourcemap: mode === 'production' ? 'hidden' : true,
   },
 }));

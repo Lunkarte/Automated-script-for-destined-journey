@@ -2,7 +2,9 @@
 
 ## 概述
 
-- 脚本内的注释是Claude写的与作者本人无关,下面的也是
+脚本内的注释是Claude写的与作者本人无关,下面的也是
+
+[仓库 JsDelivr 链接](https://cdn.jsdelivr.net/gh/The-poem-of-destiny/Automated-script-for-destined-journey/)
 
 ## 许可证
 
