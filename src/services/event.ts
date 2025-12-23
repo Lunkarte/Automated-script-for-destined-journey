@@ -1,0 +1,71 @@
+/**
+ * 事件处理服务
+ * 管理事件链的开启、进行和结束
+ */
+
+import type { MessageVariables } from '../types';
+import { safeGet } from '../utils';
+
+/**
+ * 处理事件状态
+ * - 事件开启时记录开始时间和缓存信息
+ * - 事件结束时清理状态并记录完成
+ *
+ * @param current_variables - 当前的变量数据
+ */
+export const processEvent = (current_variables: MessageVariables): void => {
+  // 清理旧的注入
+  uninjectPrompts(['completed_events']);
+
+  const world = current_variables.stat_data.世界;
+  const eventChain = current_variables.stat_data.事件链;
+  const isEventStarted = safeGet(eventChain, '开启', false);
+  const isEventEnded = safeGet(eventChain, '结束', false);
+  const eventTitle = safeGet(eventChain, '标题', '');
+  const eventStep = safeGet(eventChain, '阶段', '');
+  const completedEvents: string[] = safeGet(eventChain, '已完成事件', []);
+
+  // 同步已完成事件到 date
+  insertOrAssignVariables(
+    { date: { event: { completed_events: completedEvents } } },
+    { type: 'message' },
+  );
+
+  // 事件开启处理
+  if (isEventStarted) {
+    // 记录事件开始时间（如果尚未记录）
+    const existingTime = safeGet(current_variables, 'date.event.time', null);
+    if (_.isNil(existingTime)) {
+      insertOrAssignVariables(
+        { date: { event: { time: world.时间 } } },
+        { type: 'message' },
+      );
+    }
+
+    // 更新事件缓存信息
+    insertOrAssignVariables(
+      { date: { event: { cache: `当前事件为${eventTitle}，当前步骤为${eventStep}` } } },
+      { type: 'message' },
+    );
+  }
+
+  // 事件结束处理
+  if (isEventEnded) {
+    // 清理事件相关的注入
+    uninjectPrompts(['event', 'event_tips']);
+
+    // 记录完成的事件
+    const updatedCompletedEvents = [...completedEvents, `已完成事件${eventTitle}`];
+
+    // 重置事件状态
+    _.set(eventChain, '已完成事件', updatedCompletedEvents);
+    _.set(eventChain, '标题', '');
+    _.set(eventChain, '阶段', '');
+    _.set(eventChain, '结束', false);
+    _.set(eventChain, '开启', false);
+
+    // 清理 date 中的事件数据
+    deleteVariable('date.event.time', { type: 'message' });
+    deleteVariable('date.event.cache', { type: 'message' });
+  }
+};

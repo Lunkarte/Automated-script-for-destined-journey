@@ -2,35 +2,36 @@
   "name": "automated-script-for-destined-journey",
   "version": "1.1.4",
   "description": "命定的异世界开发之旅自动化脚本 - 用于处理角色升级、货币系统、事件链管理等游戏机制",
-  "main": "main-controller.js",
+  "type": "module",
   "scripts": {
-    "build": "node build.js"
+    "dev": "vite build --watch --mode development",
+    "build": "vite build --mode production",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write src",
+    "format:check": "prettier --check src"
   },
-  "keywords": [
-    "game",
-    "automation",
-    "script",
-    "rpg",
-    "character-management"
-  ],
-  "author": "The-poem-of-destiny",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/The-poem-of-destiny/Automated-script-for-destined-journey.git"
-  },
-  "bugs": {
-    "url": "https://github.com/The-poem-of-destiny/Automated-script-for-destined-journey/issues"
-  },
-  "homepage": "https://github.com/The-poem-of-destiny/Automated-script-for-destined-journey#readme",
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=22"
   },
   "devDependencies": {
-    "@types/fs-extra": "^11.0.4",
-    "@types/node": "^24.8.1",
-    "esbuild": "^0.25.11",
-    "fs-extra": "^11.3.2",
-    "typescript": "^5.9.3"
+    "@eslint/js": "^9.39.2",
+    "@types/jquery": "^3.5.33",
+    "@types/lodash": "^4.17.21",
+    "@types/node": "^25.0.3",
+    "@types/toastr": "^2.1.43",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "klona": "^2.0.6",
+    "lodash": "^4.17.21",
+    "prettier": "^3.7.4",
+    "terser": "^5.44.1",
+    "type-fest": "^5.3.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.50.1",
+    "vite": "^7.3.0",
+    "zod": "^4.2.1"
   }
 }
