@@ -4,7 +4,7 @@
  */
 
 import type { MessageVariables } from '../types';
-import { createPromptInjection, safeGet } from '../utils';
+import { injectMultiplePrompts, safeGet } from '../utils';
 
 /**
  * 注入事件提示
@@ -19,14 +19,24 @@ export const injectEventPrompts = (_new_variables: MessageVariables, old_variabl
   // 获取已完成事件列表
   const completedEvents: string[] = safeGet(old_variables, 'date.event.completed_events', []);
 
+  // 收集需要注入的提示
+  const prompts: Array<{
+    id: string;
+    content: string;
+    position?: 'none' | 'in_chat';
+    depth?: number;
+    role?: 'system' | 'user' | 'assistant';
+  }> = [];
+
   // 注入已完成事件
   if (completedEvents.length > 0) {
-    const prompt = createPromptInjection('已完成事件', completedEvents.join('; '), {
+    prompts.push({
+      id: '已完成事件',
+      content: completedEvents.join('; '),
       position: 'none',
       depth: 0,
       role: 'system',
     });
-    injectPrompts([prompt]);
   }
 
   // 获取事件缓存信息
@@ -35,23 +45,26 @@ export const injectEventPrompts = (_new_variables: MessageVariables, old_variabl
   // 如果有活跃事件，注入事件信息和提示
   if (!_.isNil(eventCache) && !_.isEmpty(eventCache)) {
     // 注入事件缓存
-    const eventPrompt = createPromptInjection('事件', eventCache, {
+    prompts.push({
+      id: '事件',
+      content: eventCache,
       position: 'none',
       depth: 0,
       role: 'system',
     });
-    injectPrompts([eventPrompt]);
 
     // 注入事件链激活提示
-    const tipsPrompt = createPromptInjection(
-      '事件提示',
-      '（IMPORTANT: 当前剧情事件进行中，你必须按照<event>中内容发展剧情，不得太过偏离剧情事件）',
-      {
-        position: 'in_chat',
-        depth: 0,
-        role: 'system',
-      },
-    );
-    injectPrompts([tipsPrompt]);
+    prompts.push({
+      id: '事件提示',
+      content: '（IMPORTANT: 当前剧情事件进行中，你必须按照<event>中内容发展剧情，不得太过偏离剧情事件）',
+      position: 'in_chat',
+      depth: 0,
+      role: 'system',
+    });
+  }
+
+  // 批量注入
+  if (prompts.length > 0) {
+    injectMultiplePrompts(prompts);
   }
 };

@@ -12,6 +12,7 @@
 
 import { GameConfig } from '../config';
 import type { MessageVariables } from '../types';
+import { safeGet } from '../utils';
 
 /** 兑换率配置 */
 const ExchangeRates = {
@@ -19,53 +20,44 @@ const ExchangeRates = {
   spToCp: GameConfig.SpToCp,
 } as const;
 
-/** 货币数据结构 */
-type CurrencyData = { 金币: number; 银币: number; 铜币: number };
-type CurrencyKey = keyof CurrencyData;
-
-/**
- * 向上借位：当 lower 为负时，从 higher 借入
- */
-const borrowFrom = (
-  currency: CurrencyData,
-  higher: CurrencyKey,
-  lower: CurrencyKey,
-  rate: number
-): void => {
-  if (currency[lower] < 0) {
-    const borrow = _.ceil(Math.abs(currency[lower]) / rate);
-    currency[higher] -= borrow;
-    currency[lower] += borrow * rate;
-  }
-};
-
-/**
- * 向下偿还：当 higher 为负时，传递给 lower（可能产生欠债）
- */
-const transferTo = (
-  currency: CurrencyData,
-  higher: CurrencyKey,
-  lower: CurrencyKey,
-  rate: number
-): void => {
-  if (currency[higher] < 0) {
-    currency[lower] += currency[higher] * rate;
-    currency[higher] = 0;
-  }
-};
-
 /**
  * 处理货币兑换
- * 使用借位后偿还策略
+ * 使用借位后偿还策略，直接操作路径确保写入
  */
 export const processCurrencyExchange = (current_variables: MessageVariables): void => {
-  const currency = current_variables.stat_data.货币;
+  // 直接获取各货币值
+  let 金币 = safeGet(current_variables, 'stat_data.货币.金币', 0);
+  let 银币 = safeGet(current_variables, 'stat_data.货币.银币', 0);
+  let 铜币 = safeGet(current_variables, 'stat_data.货币.铜币', 0);
 
-  // 向上借位：低级货币为负时，从高级货币借入
-  borrowFrom(currency, '银币', '铜币', ExchangeRates.spToCp);
-  borrowFrom(currency, '金币', '银币', ExchangeRates.gpToSp);
+  // 向上借位：铜币负 → 借银币
+  if (铜币 < 0) {
+    const borrow = _.ceil(Math.abs(铜币) / ExchangeRates.spToCp);
+    银币 -= borrow;
+    铜币 += borrow * ExchangeRates.spToCp;
+  }
 
-  // 向下偿还：高级货币为负时，传递给低级货币
-  transferTo(currency, '金币', '银币', ExchangeRates.gpToSp);
-  transferTo(currency, '银币', '铜币', ExchangeRates.spToCp);
+  // 向上借位：银币负 → 借金币
+  if (银币 < 0) {
+    const borrow = _.ceil(Math.abs(银币) / ExchangeRates.gpToSp);
+    金币 -= borrow;
+    银币 += borrow * ExchangeRates.gpToSp;
+  }
+
+  // 向下偿还：金币负 → 传给银币
+  if (金币 < 0) {
+    银币 += 金币 * ExchangeRates.gpToSp;
+    金币 = 0;
+  }
+
+  // 向下偿还：银币负 → 传给铜币（可能产生欠债）
+  if (银币 < 0) {
+    铜币 += 银币 * ExchangeRates.spToCp;
+    银币 = 0;
+  }
+
+  // 直接写回路径，确保数据持久化
+  _.set(current_variables, 'stat_data.货币.金币', 金币);
+  _.set(current_variables, 'stat_data.货币.银币', 银币);
+  _.set(current_variables, 'stat_data.货币.铜币', 铜币);
 };

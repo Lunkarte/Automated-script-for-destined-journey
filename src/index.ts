@@ -6,7 +6,6 @@
  */
 
 import type { MessageVariables } from './types';
-import { Schema } from './zod_schema/schema';
 
 // Services
 import { processCurrencyExchange } from './services/currency';
@@ -22,55 +21,48 @@ import { injectGameInfo } from './injection/game-info';
 // Utils
 import { deepClone, errorCatched, uninject } from './utils';
 
+// Schema
+import { Schema } from './zod_schema/schema';
+
+/** date 数据默认值 */
+const DefaultDate: MessageVariables['date'] = {
+  event: { cache: '', completed_events: [] },
+  npcs: {},
+  requiresContractForExp: true,
+};
+
 /**
  * 变量更新处理函数
- * 在 MVU 变量更新结束后调用
- *
- * @param data - 更新后的 MVU 数据
- * @param data_before_update - 更新前的 MVU 数据
  */
 const handleVariableUpdate = (data: Mvu.MvuData, data_before_update: Mvu.MvuData): void => {
-  // 构造 MessageVariables 类型（使用深拷贝创建独立副本）
-  const currentVariables: MessageVariables = {
-    stat_data: deepClone(data.stat_data) as MessageVariables['stat_data'],
-    date: deepClone((data as unknown as { date: MessageVariables['date'] }).date) ?? {
-      event: { cache: '', completed_events: [] },
-      npcs: {},
-      requiresContractForExp: true,
-    },
-  };
+  // 使用 insertVariables 确保 date 数据存在（仅插入不存在的字段）
+  insertVariables({ date: DefaultDate }, { type: 'message' });
 
-  const oldVariables: MessageVariables = {
+  // 在处理前使用 Schema.parse 验证并规范化 stat_data（使用 deepClone 保护原数据）
+  data.stat_data = Schema.parse(deepClone(data.stat_data));
+
+  // 获取当前 date 数据
+  const currentDate = _.get(data, 'date', DefaultDate) as MessageVariables['date'];
+  const oldDate = _.get(data_before_update, 'date', DefaultDate) as MessageVariables['date'];
+
+  // 构造变量引用
+  const current: MessageVariables = {
+    stat_data: data.stat_data as MessageVariables['stat_data'],
+    date: currentDate,
+  };
+  const old: MessageVariables = {
     stat_data: data_before_update.stat_data as MessageVariables['stat_data'],
-    date: (data_before_update as unknown as { date: MessageVariables['date'] }).date ?? {
-      event: { cache: '', completed_events: [] },
-      npcs: {},
-      requiresContractForExp: true,
-    },
+    date: oldDate,
   };
 
-  // 清理旧的注入
   uninject();
-
-  // 数据维护
-  maintainCharacterData(currentVariables, oldVariables);
-
-  // 经验与升级处理
-  processExperienceAndLevel(currentVariables, oldVariables);
-  processNPCExperienceAndLevel(currentVariables, oldVariables);
-
-  // 货币兑换
-  processCurrencyExchange(currentVariables);
-
-  // 事件处理
-  processEvent(currentVariables);
-
-  // 信息注入
-  injectGameInfo(currentVariables);
-  injectEventPrompts(currentVariables, oldVariables);
-
-  // 使用 zod schema 约束数据并写回
-  _.set(data, 'stat_data', Schema.parse(currentVariables.stat_data));
+  maintainCharacterData(current, old);
+  processExperienceAndLevel(current, old);
+  processNPCExperienceAndLevel(current, old);
+  processCurrencyExchange(current);
+  processEvent(current);
+  injectGameInfo(current);
+  injectEventPrompts(current, old);
 };
 
 /**

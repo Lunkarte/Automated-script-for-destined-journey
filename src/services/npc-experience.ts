@@ -9,7 +9,7 @@
 
 import { getRequiredXpForLevel, isMaxLevel, LevelXpTable } from '../config';
 import type { MessageVariables, NpcExpData } from '../types';
-import { injectMultiplePrompts } from '../utils';
+import { injectMultiplePrompts, safeGet } from '../utils';
 
 /**
  * 处理所有 NPC 的经验与升级
@@ -18,29 +18,32 @@ import { injectMultiplePrompts } from '../utils';
  * @param old_variables - 更新前的变量数据（由 MVU 事件提供）
  */
 export const processNPCExperienceAndLevel = (new_variables: MessageVariables, old_variables: MessageVariables): void => {
-  const destined = new_variables.stat_data.命定系统.命定之人;
-  const dateNpcs = new_variables.date.npcs;
-  const requiresContract = new_variables.date.requiresContractForExp ?? true;
+  const destined = safeGet(new_variables, 'stat_data.命定系统.命定之人', {} as Record<string, any>);
+  const requiresContract = safeGet(new_variables, 'date.requiresContractForExp', true);
+
+  // 获取现有的 date.npcs 数据，如果不存在则创建空对象
+  const dateNpcs: Record<string, NpcExpData> = safeGet(new_variables, 'date.npcs', {});
 
   // 计算主角经验增量
-  const oldExp = old_variables?.stat_data?.角色?.累计经验值 ?? new_variables.stat_data.角色.累计经验值;
-  const deltaExp = new_variables.stat_data.角色.累计经验值 - oldExp;
+  const currentExp = safeGet(new_variables, 'stat_data.角色.累计经验值', 0);
+  const oldExp = safeGet(old_variables, 'stat_data.角色.累计经验值', currentExp);
+  const deltaExp = currentExp - oldExp;
 
   // 同步：添加命定之人中存在但 date.npcs 中不存在的对象
   _.forEach(destined, (npc, name) => {
     if (!dateNpcs[name]) {
-      dateNpcs[name] = {
+      _.set(dateNpcs, name, {
         level: npc.等级,
         exp: 0,
         required_exp: getRequiredXpForLevel(npc.等级),
-      };
+      });
     }
   });
 
   // 同步：删除 date.npcs 中存在但命定之人中不存在的对象
   _.forEach(_.keys(dateNpcs), (name) => {
     if (!destined[name]) {
-      delete dateNpcs[name];
+      _.unset(dateNpcs, name);
     }
   });
 
@@ -52,37 +55,40 @@ export const processNPCExperienceAndLevel = (new_variables: MessageVariables, ol
     const npc = destined[name];
     if (!npc) return;
 
-    // 同步等级
-    npcData.level = npc.等级;
-    npcData.required_exp = getRequiredXpForLevel(npcData.level);
+    // 同步等级（使用 _.set 确保写入）
+    _.set(npcData, 'level', npc.等级);
+    _.set(npcData, 'required_exp', getRequiredXpForLevel(npcData.level));
 
     // 确保经验不低于前一级所需
     if (npcData.level > 1) {
       const prevRequired = LevelXpTable[npcData.level - 1] ?? 0;
       if (npcData.exp < prevRequired) {
-        npcData.exp = prevRequired;
+        _.set(npcData, 'exp', prevRequired);
       }
     }
 
     // 经验增加：在场 + 经验增量 > 0 + （需要契约时要已缔结）
     const canGainExp = npc.是否在场 && deltaExp > 0 && (!requiresContract || npc.是否缔结契约);
     if (canGainExp) {
-      npcData.exp += deltaExp;
+      _.set(npcData, 'exp', npcData.exp + deltaExp);
     }
 
     // 升级检查
     const initialLevel = npc.等级;
     while (npcData.exp >= npcData.required_exp && !isMaxLevel(npcData.level)) {
-      npcData.level += 1;
-      npcData.required_exp = getRequiredXpForLevel(npcData.level);
+      _.set(npcData, 'level', npcData.level + 1);
+      _.set(npcData, 'required_exp', getRequiredXpForLevel(npcData.level));
     }
 
-    // 同步升级后的等级回命定之人
+    // 同步升级后的等级回命定之人（使用 _.set 确保写入）
     if (npc.等级 < npcData.level) {
       levelUpPrompts.push(`${name}从LV${initialLevel}提升到LV${npcData.level}`);
-      npc.等级 = npcData.level;
+      _.set(npc, '等级', npcData.level);
     }
   });
+
+  // 使用 insertOrAssignVariables 持久化 date.npcs 到消息楼层变量
+  insertOrAssignVariables({ date: { npcs: dateNpcs } }, { type: 'message' });
 
   // 注入升级提示
   if (levelUpPrompts.length > 0) {
