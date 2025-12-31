@@ -12,12 +12,11 @@ import { injectMultiplePrompts, safeGet } from '../utils';
  * - 当前事件缓存信息
  * - 事件链激活提示
  *
- * @param _new_variables - 更新后的变量数据（未使用）
- * @param old_variables - 更新前的变量数据（由 MVU 事件提供）
  */
-export const injectEventPrompts = (_new_variables: MessageVariables, old_variables: MessageVariables): void => {
+export const injectEventPrompts = (): void => {
+  const variables = getVariables({type: 'message', message_id: -2});
   // 获取已完成事件列表
-  const completedEvents: string[] = safeGet(old_variables, 'date.event.completed_events', []);
+  const completedEvents: string[] = variables.date.event.completed_events;
 
   // 收集需要注入的提示
   const prompts: Array<{
@@ -40,7 +39,7 @@ export const injectEventPrompts = (_new_variables: MessageVariables, old_variabl
   }
 
   // 获取事件缓存信息
-  const eventCache: string | null = safeGet(old_variables, 'date.event.cache', null);
+  const eventCache: string | null = variables.date.event.cache;
 
   // 如果有活跃事件，注入事件信息和提示
   if (!_.isNil(eventCache) && !_.isEmpty(eventCache)) {

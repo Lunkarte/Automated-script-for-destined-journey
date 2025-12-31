@@ -62,7 +62,7 @@ const handleVariableUpdate = (data: Mvu.MvuData, data_before_update: Mvu.MvuData
   processCurrencyExchange(current);
   processEvent(current);
   injectGameInfo(current);
-  injectEventPrompts(current, old);
+  injectEventPrompts();
 };
 
 /**
@@ -74,7 +74,9 @@ const init = async (): Promise<void> => {
 
   // 监听变量更新结束事件
   eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, errorCatched(handleVariableUpdate));
-  
+  eventOn(tavern_events.GENERATION_AFTER_COMMANDS, injectEventPrompts);
+  eventOn(tavern_events.MESSAGE_SENT, injectEventPrompts);
+  eventOn(tavern_events.MESSAGE_UPDATED, injectEventPrompts);
   console.log('[命定之诗] 脚本已加载 ฅ\'ω\'ฅ');
   toastr.success('[命定之诗] 脚本已加载 ฅ\'ω\'ฅ');
   eventEmit("[命定之诗] 脚本已加载");
