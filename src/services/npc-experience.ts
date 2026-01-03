@@ -7,7 +7,7 @@
  * - 只有「在场」（如果需要契约则「已缔结契约」）的 NPC 才能获得经验
  */
 
-import { getRequiredXpForLevel, isMaxLevel, LevelXpTable } from '../config';
+import { getRequiredXpForLevel, getTierForLevel, isMaxLevel, LevelXpTable } from '../config';
 import type { MessageVariables, NpcExpData } from '../types';
 import { injectMultiplePrompts, safeGet } from '../utils';
 
@@ -85,6 +85,8 @@ export const processNPCExperienceAndLevel = (new_variables: MessageVariables, ol
     if (npc.等级 < npcData.level) {
       levelUpPrompts.push(`${name}从LV${initialLevel}提升到LV${npcData.level}`);
       _.set(npc, '等级', npcData.level);
+      // 同步生命层级
+      _.set(npc, '生命层级', getTierForLevel(npcData.level));
     }
   });
 
