@@ -60,6 +60,8 @@ export interface LogData {
   bankruptcyCount: number;
   /** AI非法提升等级的消息楼层ID列表 */
   illegalLevelUpId: number[];
+  /** FP(命运点数)总获取量 */
+  totalFPGained: number;
 }
 
 /** 内部数据类型 - 用于脚本持久化 */

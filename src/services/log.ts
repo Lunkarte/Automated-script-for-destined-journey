@@ -1,129 +1,93 @@
 /**
- * 日志系统服务
- * 负责跟踪和记录游戏统计数据
- * 数据存储在 date.log 下
+ * 类型定义模块
+ * 从 zod schema 推导 TypeScript 类型
  */
+import { Schema } from '../zod_schema/schema';
 
-import type { LogData, MessageVariables } from '@/types';
-import { safeGet } from '@/utils';
+/** stat_data 类型 - 从 zod schema 推导 */
+export type StatData = z.infer<typeof Schema>;
 
-/** 日志数据默认值 */
-export const DefaultLogData: LogData = {
-  deathCount: 0,
-  maxCurrencyDebt: 0,
-  bankruptcyCount: 0,
-  illegalLevelUpId: [],
-};
+/** 角色类型 */
+export type Character = StatData['角色'];
 
-/**
- * 获取日志数据（从 date.log 获取，不存在则返回默认值的副本）
- */
-const getLogData = (variables: MessageVariables): LogData => {
-  const existingLog = safeGet(variables, 'date.log', null);
-  if (existingLog) {
-    return existingLog;
-  } else {
-    return { ...DefaultLogData };
-  }
-};
+/** 货币类型 */
+export type Currency = StatData['货币'];
 
-/**
- * 检测角色死亡
- * 当生命值从正数变为0或以下时计为死亡
- */
-const checkDeath = (current: MessageVariables, old: MessageVariables, log: LogData): void => {
-  const currentHp = safeGet(current, 'stat_data.角色.生命值', 1);
-  const oldHp = safeGet(old, 'stat_data.角色.生命值', 1);
+/** 命定系统类型 */
+export type DestinySystem = StatData['命定系统'];
 
-  if (oldHp > 0 && currentHp <= 0) {
-    log.deathCount++;
-  }
-};
+/** 命定之人类型 */
+export type DestinedOne = DestinySystem['命定之人'][string];
 
-/**
- * 检测货币欠款
- * 当铜币为负数时，记录最大欠款额度
- */
-const checkCurrencyDebt = (current: MessageVariables, log: LogData): void => {
-  const 铜币 = safeGet(current, 'stat_data.货币.铜币', 0);
+/** 登神长阶类型 */
+export type Ascension = StatData['登神长阶'];
 
-  if (铜币 < 0) {
-    const debt = Math.abs(铜币);
-    if (debt > log.maxCurrencyDebt) {
-      log.maxCurrencyDebt = debt;
-    }
-  }
-};
+/** 世界信息类型 */
+export type World = StatData['世界'];
 
-/**
- * 检测破产
- * 当所有货币都为0或负数且之前有正资产时计为破产
- */
-const checkBankruptcy = (current: MessageVariables, old: MessageVariables, log: LogData): void => {
-  const current金币 = safeGet(current, 'stat_data.货币.金币', 0);
-  const current银币 = safeGet(current, 'stat_data.货币.银币', 0);
-  const current铜币 = safeGet(current, 'stat_data.货币.铜币', 0);
+/** 事件链类型 */
+export type EventChain = StatData['事件链'];
 
-  const old金币 = safeGet(old, 'stat_data.货币.金币', 0);
-  const old银币 = safeGet(old, 'stat_data.货币.银币', 0);
-  const old铜币 = safeGet(old, 'stat_data.货币.铜币', 0);
+/** 背包类型 */
+export type Backpack = StatData['背包'];
 
-  // 计算总资产（转换为铜币单位）
-  const currentTotal = current金币 * 10000 + current银币 * 100 + current铜币;
-  const oldTotal = old金币 * 10000 + old银币 * 100 + old铜币;
+/** 背包物品类型 */
+export type BackpackItem = Backpack[string];
 
-  // 如果之前有正资产，现在总资产为负或为零，则计为破产
-  if (oldTotal > 0 && currentTotal <= 0) {
-    log.bankruptcyCount++;
-  }
-};
+/** 装备集类型 */
+export type EquipmentSet = StatData['装备'];
 
-/**
- * 记录AI非法提升等级
- * 由 maintain.ts 调用，使用 getLastMessageId() 获取发生错误的楼层号
- */
-export const recordIllegalLevelUp = (): void => {
-  // 获取当前日志数据
-  const variables = getVariables({ type: 'message' }) as MessageVariables;
-  const log = getLogData(variables);
+/** 任务列表类型 */
+export type QuestList = StatData['任务列表'];
 
-  // 获取发生错误的楼层ID
-  const messageId = getLastMessageId();
+/** 新闻类型 */
+export type News = StatData['新闻'];
 
-  // 如果该楼层ID尚未记录，则添加到列表中
-  if (!log.illegalLevelUpId.includes(messageId)) {
-    log.illegalLevelUpId.push(messageId);
-  }
+/** NPC 经验数据类型 */
+export interface NpcExpData {
+  level: number;
+  exp: number;
+  required_exp: number;
+}
 
-  // 使用 insertOrAssignVariables 持久化
-  insertOrAssignVariables({ date: { log: { illegalLevelUpId: log.illegalLevelUpId } } }, { type: 'message' });
-};
+/** 日志数据类型 - 用于跟踪游戏统计 */
+export interface LogData {
+  /** 死亡次数 */
+  deathCount: number;
+  /** 货币最大欠款额度（铜币） */
+  maxCurrencyDebt: number;
+  /** 破产次数 */
+  bankruptcyCount: number;
+  /** AI非法提升等级的消息楼层ID列表 */
+  illegalLevelUpId: number[];
+  /** FP(命运点数)总获取量 */
+  totalFPGained: number;
+}
 
-/**
- * 日志系统主函数
- * 在变量更新时检测并记录各种统计数据
- */
-export const logSystem = (
-  new_variables: MessageVariables,
-  old_variables: MessageVariables
-): void => {
-  // 获取现有的日志数据
-  const log = getLogData(new_variables);
+/** 内部数据类型 - 用于脚本持久化 */
+export interface DateData {
+  event: {
+    cache: string;
+    completed_events: string[];
+    time?: string;
+  };
+  npcs: Record<string, NpcExpData>;
+  requiresContractForExp: boolean;
+  /** 日志统计数据 */
+  log: LogData;
+}
 
-  // 检测各种事件
-  checkDeath(new_variables, old_variables, log);
-  checkCurrencyDebt(new_variables, log);
-  checkBankruptcy(new_variables, old_variables, log);
+/** 完整消息楼层变量类型 */
+export interface MessageVariables {
+  stat_data: StatData;
+  date: DateData;
+}
 
-  // 使用 insertOrAssignVariables 持久化 date.log 到消息楼层变量
-  // 只更新本函数管理的字段，避免覆盖 recordIllegalLevelUp 更新的 illegalLevelUpCount
-  insertOrAssignVariables({
-    date: {
-      log: {
-        deathCount: log.deathCount,
-        maxCurrencyDebt: log.maxCurrencyDebt,
-        bankruptcyCount: log.bankruptcyCount,
-      }
-    }
-  }, { type: 'message' });
-};
+/** 属性键名类型 */
+export type AttributeKey = '力量' | '敏捷' | '体质' | '智力' | '精神';
+
+/** 角色属性类型 */
+export type CharacterAttributes = Character['属性'];
+
+/** 命定之人属性类型 */
+export type DestinedOneAttributes = DestinedOne['属性'];
