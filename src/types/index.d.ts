@@ -50,6 +50,18 @@ export interface NpcExpData {
   required_exp: number;
 }
 
+/** 日志数据类型 - 用于跟踪游戏统计 */
+export interface LogData {
+  /** 死亡次数 */
+  deathCount: number;
+  /** 货币最大欠款额度（铜币） */
+  maxCurrencyDebt: number;
+  /** 破产次数 */
+  bankruptcyCount: number;
+  /** AI非法提升等级次数 */
+  illegalLevelUpCount: number;
+}
+
 /** 内部数据类型 - 用于脚本持久化 */
 export interface DateData {
   event: {
@@ -59,6 +71,8 @@ export interface DateData {
   };
   npcs: Record<string, NpcExpData>;
   requiresContractForExp: boolean;
+  /** 日志统计数据 */
+  log: LogData;
 }
 
 /** 完整消息楼层变量类型 */

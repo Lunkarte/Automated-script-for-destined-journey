@@ -23,12 +23,15 @@ import { deepClone, errorCatched, uninject } from './utils';
 
 // Schema
 import { Schema } from './zod_schema/schema';
+import { achievement } from '@/services/achievement';
+import { logSystem, DefaultLogData } from '@/services/log';
 
 /** date 数据默认值 */
 const DefaultDate: MessageVariables['date'] = {
   event: { cache: '', completed_events: [] },
   npcs: {},
   requiresContractForExp: true,
+  log: DefaultLogData,
 };
 
 /**
@@ -63,6 +66,7 @@ const handleVariableUpdate = (data: Mvu.MvuData, data_before_update: Mvu.MvuData
   processEvent(current);
   injectGameInfo(current);
   injectEventPrompts();
+  logSystem(current, old);
 };
 
 /**
@@ -77,6 +81,7 @@ const init = async (): Promise<void> => {
   eventOn(tavern_events.GENERATION_AFTER_COMMANDS, injectEventPrompts);
   eventOn(tavern_events.MESSAGE_SENT, injectEventPrompts);
   eventOn(tavern_events.MESSAGE_UPDATED, injectEventPrompts);
+  eventOn(getButtonEvent('查看成就'), achievement);
   console.log('[命定之诗] 脚本已加载 ฅ\'ω\'ฅ');
   toastr.success('[命定之诗] 脚本已加载 ฅ\'ω\'ฅ');
   eventEmit("[命定之诗] 脚本已加载");

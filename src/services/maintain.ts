@@ -3,9 +3,11 @@
  * 负责维护角色数据的完整性和一致性
  */
 
+import { recordIllegalLevelUp } from '@/services/log';
 import { GameConfig, getRequiredXpForLevel, getTierForLevel } from '../config';
 import type { MessageVariables } from '../types';
 import { safeGet } from '../utils';
+
 
 /**
  * 维护角色数据的完整性
@@ -23,6 +25,7 @@ export const maintainCharacterData = (new_variables: MessageVariables, old_varia
   // 防止等级被非法提升
   if (oldLevel < character.等级 && oldLevel !== 1) {
     _.set(character, '等级', oldLevel);
+    recordIllegalLevelUp();
     toastr.error('等级被AI非法提升,请检查变量更新');
   }
 
