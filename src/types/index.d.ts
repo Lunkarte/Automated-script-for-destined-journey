@@ -58,8 +58,8 @@ export interface LogData {
   maxCurrencyDebt: number;
   /** 破产次数 */
   bankruptcyCount: number;
-  /** AI非法提升等级次数 */
-  illegalLevelUpCount: number;
+  /** AI非法提升等级的消息楼层ID列表 */
+  illegalLevelUpId: number[];
 }
 
 /** 内部数据类型 - 用于脚本持久化 */

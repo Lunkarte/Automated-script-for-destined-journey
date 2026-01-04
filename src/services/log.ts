@@ -12,7 +12,7 @@ export const DefaultLogData: LogData = {
   deathCount: 0,
   maxCurrencyDebt: 0,
   bankruptcyCount: 0,
-  illegalLevelUpCount: 0,
+  illegalLevelUpId: [],
 };
 
 /**
@@ -80,17 +80,23 @@ const checkBankruptcy = (current: MessageVariables, old: MessageVariables, log: 
 
 /**
  * 记录AI非法提升等级
- * 由 maintain.ts 调用
+ * 由 maintain.ts 调用，使用 getLastMessageId() 获取发生错误的楼层号
  */
 export const recordIllegalLevelUp = (): void => {
   // 获取当前日志数据
-  const variables = getVariables({type: 'message'});
+  const variables = getVariables({ type: 'message' }) as MessageVariables;
+  const log = getLogData(variables);
 
-  // 增加计数
-  const i = variables.date.log.illegalLevelUpCount + 1||0;
+  // 获取发生错误的楼层ID
+  const messageId = getLastMessageId();
+
+  // 如果该楼层ID尚未记录，则添加到列表中
+  if (!log.illegalLevelUpId.includes(messageId)) {
+    log.illegalLevelUpId.push(messageId);
+  }
 
   // 使用 insertOrAssignVariables 持久化
-  insertOrAssignVariables({ date: { log: { illegalLevelUpCount: i } } }, { type: 'message' });
+  insertOrAssignVariables({ date: { log: { illegalLevelUpId: log.illegalLevelUpId } } }, { type: 'message' });
 };
 
 /**

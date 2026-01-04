@@ -9,7 +9,7 @@ export function achievement() {
     `☠️ 死亡次数: ${log.deathCount}`,
     `💰 货币最大欠款: ${log.maxCurrencyDebt} 铜币`,
     `📉 破产次数: ${log.bankruptcyCount}`,
-    `⚠️ AI非法提升等级次数: ${log.illegalLevelUpCount}`,
+    `⚠️ AI非法提升等级次数: ${log.illegalLevelUpId.length}`,
   ];
 
   toastr.success(achievements.join('\n'), '“成就”', { timeOut: 10000 });
