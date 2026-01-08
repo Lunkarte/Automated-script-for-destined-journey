@@ -5,6 +5,7 @@
 import { AttributeKeys, GameConfig, getMilestoneForLevel, getRequiredXpForLevel, isMaxLevel } from '../config';
 import type { MessageVariables } from '../types';
 import { injectMultiplePrompts, safeGet } from '../utils';
+import { canBreakAscensionLevel } from './ascension';
 
 /**
  * 处理玩家角色的经验与升级
@@ -19,6 +20,13 @@ export const processExperienceAndLevel = (new_variables: MessageVariables, old_v
 
   // 升级处理循环
   while (character.累计经验值 >= Number(character.升级所需经验) && !isMaxLevel(character.等级)) {
+    const canBreak = canBreakAscensionLevel(character.等级, new_variables);
+    if (!canBreak) {
+      // 关键等级未满足条件时，强制清空超出的经验
+      _.set(character, '累计经验值', Number(character.升级所需经验));
+      break;
+    }
+
     _.set(character, '等级', character.等级 + 1);
     _.set(character, '升级所需经验', getRequiredXpForLevel(character.等级));
 

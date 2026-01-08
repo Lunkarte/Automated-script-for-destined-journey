@@ -1,0 +1,153 @@
+/**
+ * 登神长阶相关逻辑
+ */
+
+import { GameConfig } from '../config';
+import type { MessageVariables, QuestList } from '../types';
+import { safeGet } from '../utils';
+
+export const AscensionBlockLevels = [12, 16, 20, 24] as const;
+
+const AscensionQuestIds = {
+  element: '登神·启明之阶',
+  power: '登神·铸权之仪',
+  law: '登神·定律誓约',
+  godPosition: '登神·登神仪式',
+  godNation: '登神·神国初立',
+} as const;
+
+const AscensionQuests = {
+  [AscensionQuestIds.element]: {
+    简介: '启明之阶',
+    目标: '以一枚要素点燃登神之火，让长阶回应你的名。',
+    奖励: '长阶初启，神火与要素共鸣。',
+  },
+  [AscensionQuestIds.power]: {
+    简介: '铸权之仪',
+    目标: '三要素归一，淬炼成唯一权能。',
+    奖励: '权能成形，诸力归位于你。',
+  },
+  [AscensionQuestIds.law]: {
+    简介: '定律誓约',
+    目标: '以权能与外界试炼立誓，铸成不灭法则。',
+    奖励: '法则凝就，秩序向你低首。',
+  },
+  [AscensionQuestIds.godPosition]: {
+    简介: '登神仪式',
+    目标: '行登神之礼，确立神位。',
+    奖励: '神位应诺，尊名刻入天穹。',
+  },
+  [AscensionQuestIds.godNation]: {
+    简介: '神国初立',
+    目标: '赐予神国之名，令其在诸界立足。',
+    奖励: '神国初立，法则之缚自此尽解。',
+  },
+} as const;
+
+const getRequiredXpNumber = (character: Record<string, any>): number | null => {
+  const requiredXp = Number(safeGet(character, '升级所需经验', 0));
+  return Number.isFinite(requiredXp) ? requiredXp : null;
+};
+
+const isExpFull = (character: Record<string, any>): boolean => {
+  const requiredXp = getRequiredXpNumber(character);
+  return requiredXp !== null && safeGet(character, '累计经验值', 0) >= requiredXp;
+};
+
+const upsertQuest = (quests: Record<string, any>, quest_id: string): void => {
+  _.set(quests, quest_id, AscensionQuests[quest_id as keyof typeof AscensionQuests]);
+};
+
+const removeQuest = (quests: Record<string, any>, quest_id: string): void => {
+  if (_.has(quests, quest_id)) {
+    _.unset(quests, quest_id);
+  }
+};
+
+// 统计登神长阶关键数据
+export const getAscensionCounts = (ascension: Record<string, any>) => {
+  return {
+    elementCount: _.size(safeGet(ascension, '要素', {} as any)),
+    powerCount: _.size(safeGet(ascension, '权能', {} as any)),
+    lawCount: _.size(safeGet(ascension, '法则', {} as any)),
+    hasGodPosition: !!safeGet(ascension, '神位', ''),
+    hasGodNationName: !!safeGet(ascension, '神国.名称', ''),
+  };
+};
+
+// 关键等级晋升需要满足登神长阶的突破条件
+export const canBreakAscensionLevel = (current_level: number, variables: MessageVariables): boolean => {
+  if (!AscensionBlockLevels.includes(current_level as (typeof AscensionBlockLevels)[number])) {
+    return true;
+  }
+
+  const character = safeGet(variables, 'stat_data.主角', {} as any);
+  const ascension = safeGet(character, '登神长阶', {} as any);
+  const { elementCount, powerCount, lawCount, hasGodPosition } = getAscensionCounts(ascension);
+
+  switch (current_level) {
+    case 12:
+      return elementCount > 0;
+    case 16:
+      return powerCount > 0;
+    case 20:
+      return lawCount > 0;
+    case 24:
+      return lawCount > 0 && hasGodPosition;
+    default:
+      return true;
+  }
+};
+
+// 同步登神长阶任务与状态
+export const syncAscensionState = (variables: MessageVariables): void => {
+  const character = safeGet(variables, 'stat_data.主角', {} as any);
+  const quests = safeGet(variables, 'stat_data.任务列表', {} as QuestList);
+  const ascension = safeGet(character, '登神长阶', {} as any);
+  const { elementCount, powerCount, lawCount, hasGodPosition, hasGodNationName } = getAscensionCounts(ascension);
+  const level = Number(safeGet(character, '等级', 1));
+  const expFull = isExpFull(character);
+  const extraConditionMet = safeGet(variables, 'date.ascensionExtraConditionMet', false);
+
+  // 未达成额外条件时，禁止在20级阶段写入法则
+  if (level === 20 && lawCount > 0 && !extraConditionMet) {
+    _.set(character, '登神长阶.法则', {});
+  }
+
+  const unlockAscension = level >= GameConfig.AscensionUnlockLevel || (level === 12 && expFull);
+  _.set(character, '登神长阶.是否开启', safeGet(ascension, '是否开启', false) || unlockAscension);
+
+  if (level === 12 && expFull && elementCount === 0) {
+    upsertQuest(quests, AscensionQuestIds.element);
+  } else {
+    removeQuest(quests, AscensionQuestIds.element);
+  }
+
+  if (level === 16 && expFull && elementCount === 3 && powerCount === 0) {
+    upsertQuest(quests, AscensionQuestIds.power);
+  } else {
+    removeQuest(quests, AscensionQuestIds.power);
+  }
+
+  if (level === 20 && expFull && powerCount >= 1 && lawCount === 0) {
+    upsertQuest(quests, AscensionQuestIds.law);
+  } else {
+    removeQuest(quests, AscensionQuestIds.law);
+  }
+
+  if (level === 24 && expFull && lawCount >= 1 && !hasGodPosition) {
+    upsertQuest(quests, AscensionQuestIds.godPosition);
+  } else {
+    removeQuest(quests, AscensionQuestIds.godPosition);
+  }
+
+  if (level === 25 && lawCount >= 2 && !hasGodNationName) {
+    upsertQuest(quests, AscensionQuestIds.godNation);
+  } else {
+    removeQuest(quests, AscensionQuestIds.godNation);
+  }
+
+  if (lawCount > 0 && extraConditionMet) {
+    insertOrAssignVariables({ date: { ascensionExtraConditionMet: false } }, { type: 'message' });
+  }
+};

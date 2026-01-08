@@ -4,9 +4,10 @@
  */
 
 import { recordIllegalLevelUp } from '@/services/log';
-import { GameConfig, getRequiredXpForLevel, getTierForLevel } from '../config';
+import { getRequiredXpForLevel, getTierForLevel } from '../config';
 import type { MessageVariables } from '../types';
 import { safeGet } from '../utils';
+import { syncAscensionState } from './ascension';
 
 
 /**
@@ -20,8 +21,8 @@ export const maintainCharacterData = (new_variables: MessageVariables, old_varia
   const oldLevel = safeGet(old_variables, 'stat_data.主角.等级', 1);
   const isInitDryRun = getLastMessageId() <= 2;
 
-  // 登神长阶开启条件
-  _.set(new_variables, 'stat_data.主角.登神长阶.是否开启', character.等级 >= GameConfig.AscensionUnlockLevel);
+  // 登神长阶开启条件与任务同步
+  syncAscensionState(new_variables);
 
   // 防止等级被非法提升
   if (!isInitDryRun && oldLevel < character.等级) {

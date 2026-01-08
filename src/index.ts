@@ -30,6 +30,7 @@ const DefaultDate: MessageVariables['date'] = {
   event: { cache: '', completed_events: [] },
   npcs: {},
   requiresContractForExp: true,
+  ascensionExtraConditionMet: false,
   log: DefaultLogData,
 };
 
