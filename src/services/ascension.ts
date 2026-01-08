@@ -54,11 +54,11 @@ const isExpFull = (character: Record<string, any>): boolean => {
   return requiredXp !== null && safeGet(character, '累计经验值', 0) >= requiredXp;
 };
 
-const upsertQuest = (quests: Record<string, any>, quest_id: string): void => {
+const upsertQuest = (quests: QuestList, quest_id: string): void => {
   _.set(quests, quest_id, AscensionQuests[quest_id as keyof typeof AscensionQuests]);
 };
 
-const removeQuest = (quests: Record<string, any>, quest_id: string): void => {
+const removeQuest = (quests: QuestList, quest_id: string): void => {
   if (_.has(quests, quest_id)) {
     _.unset(quests, quest_id);
   }

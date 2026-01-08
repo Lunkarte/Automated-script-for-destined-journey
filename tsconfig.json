@@ -5,7 +5,8 @@
       "lodash",
       "toastr",
       "type-fest",
-      "zod"
+      "zod",
+      "jest"
     ],
     "target": "ESNext",
     "module": "ESNext",

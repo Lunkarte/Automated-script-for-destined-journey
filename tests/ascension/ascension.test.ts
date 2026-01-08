@@ -1,0 +1,156 @@
+import { canBreakAscensionLevel, syncAscensionState } from '../../src/services/ascension';
+import { buildVariables } from '../helpers';
+
+describe('ascension gating', () => {
+  test('level 12 requires element to break', () => {
+    const variables = buildVariables({
+      stat_data: {
+        主角: {
+          等级: 12,
+        },
+      },
+    });
+
+    expect(canBreakAscensionLevel(12, variables)).toBe(false);
+
+    variables.stat_data.主角.登神长阶.要素 = { 火: { 名称: '火' } };
+    expect(canBreakAscensionLevel(12, variables)).toBe(true);
+  });
+
+  test('level 16 requires power to break', () => {
+    const variables = buildVariables({
+      stat_data: {
+        主角: {
+          等级: 16,
+        },
+      },
+    });
+
+    expect(canBreakAscensionLevel(16, variables)).toBe(false);
+
+    variables.stat_data.主角.登神长阶.权能 = { 炽权: { 名称: '炽权' } };
+    expect(canBreakAscensionLevel(16, variables)).toBe(true);
+  });
+
+  test('level 20 requires law to break', () => {
+    const variables = buildVariables({
+      stat_data: {
+        主角: {
+          等级: 20,
+        },
+      },
+    });
+
+    expect(canBreakAscensionLevel(20, variables)).toBe(false);
+
+    variables.stat_data.主角.登神长阶.法则 = { 焰律: { 名称: '焰律' } };
+    expect(canBreakAscensionLevel(20, variables)).toBe(true);
+  });
+
+  test('level 24 requires law and god position to break', () => {
+    const variables = buildVariables({
+      stat_data: {
+        主角: {
+          等级: 24,
+          登神长阶: {
+            法则: { 焰律: { 名称: '焰律' } },
+            神位: '',
+          },
+        },
+      },
+    });
+
+    expect(canBreakAscensionLevel(24, variables)).toBe(false);
+
+    variables.stat_data.主角.登神长阶.神位 = '焰之神座';
+    expect(canBreakAscensionLevel(24, variables)).toBe(true);
+  });
+});
+
+describe('ascension tasks', () => {
+  test('level 12 full exp adds element quest', () => {
+    const variables = buildVariables({
+      stat_data: {
+        主角: {
+          等级: 12,
+          累计经验值: 28440,
+          升级所需经验: 28440,
+        },
+      },
+    });
+
+    syncAscensionState(variables);
+    expect(variables.stat_data.任务列表['登神·启明之阶']).toBeDefined();
+  });
+
+  test('level 16 full exp adds power quest', () => {
+    const variables = buildVariables({
+      stat_data: {
+        主角: {
+          等级: 16,
+          累计经验值: 74840,
+          升级所需经验: 74840,
+          登神长阶: {
+            要素: { a: {}, b: {}, c: {} },
+          },
+        },
+      },
+    });
+
+    syncAscensionState(variables);
+    expect(variables.stat_data.任务列表['登神·铸权之仪']).toBeDefined();
+  });
+
+  test('level 20 full exp adds law quest regardless of extra condition', () => {
+    const variables = buildVariables({
+      stat_data: {
+        主角: {
+          等级: 20,
+          累计经验值: 185840,
+          升级所需经验: 185840,
+          登神长阶: {
+            权能: { a: {} },
+          },
+        },
+      },
+      date: { ...buildVariables({}).date, ascensionExtraConditionMet: false },
+    });
+
+    syncAscensionState(variables);
+    expect(variables.stat_data.任务列表['登神·定律誓约']).toBeDefined();
+  });
+
+  test('level 20 blocks law write when extra condition unmet', () => {
+    const variables = buildVariables({
+      stat_data: {
+        主角: {
+          等级: 20,
+          登神长阶: {
+            法则: { test: { 名称: 'test' } },
+          },
+        },
+      },
+      date: { ...buildVariables({}).date, ascensionExtraConditionMet: false },
+    });
+
+    syncAscensionState(variables);
+    expect(Object.keys(variables.stat_data.主角.登神长阶.法则)).toHaveLength(0);
+  });
+
+  test('level 25 adds god nation quest when law count >= 2', () => {
+    const variables = buildVariables({
+      stat_data: {
+        主角: {
+          等级: 25,
+          登神长阶: {
+            法则: { a: {}, b: {} },
+            神国: { 名称: '', 描述: '' },
+          },
+        },
+      },
+    });
+
+    syncAscensionState(variables);
+    expect(variables.stat_data.任务列表['登神·神国初立']).toBeDefined();
+  });
+});
