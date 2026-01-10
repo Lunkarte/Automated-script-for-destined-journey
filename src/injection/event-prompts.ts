@@ -12,7 +12,7 @@ import { injectMultiplePrompts } from '../utils';
  *
  */
 export const injectEventPrompts = (): void => {
-  const variables = getVariables({type: 'message', message_id: -2});
+  const variables = getVariables({ type: 'message', message_id: -2 });
   // 获取已完成事件列表
   const completedEvents: string[] = variables.date.event.completed_events;
 
@@ -53,7 +53,8 @@ export const injectEventPrompts = (): void => {
     // 注入事件链激活提示
     prompts.push({
       id: '事件提示',
-      content: '（IMPORTANT: 当前剧情事件进行中，你必须按照<event>中内容发展剧情，不得太过偏离剧情事件）',
+      content:
+        '（IMPORTANT: 当前剧情事件进行中，你必须按照<event>中内容发展剧情，不得太过偏离剧情事件）',
       position: 'in_chat',
       depth: 0,
       role: 'system',

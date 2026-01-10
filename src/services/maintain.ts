@@ -9,14 +9,16 @@ import type { MessageVariables } from '../types';
 import { safeGet } from '../utils';
 import { syncAscensionState } from './ascension';
 
-
 /**
  * 维护角色数据的完整性
  *
  * @param new_variables - 更新后的变量数据
  * @param old_variables - 更新前的变量数据（由 MVU 事件提供）
  */
-export const maintainCharacterData = (new_variables: MessageVariables, old_variables: MessageVariables): void => {
+export const maintainCharacterData = (
+  new_variables: MessageVariables,
+  old_variables: MessageVariables
+): void => {
   const character = safeGet(new_variables, 'stat_data.主角', {} as any);
   const oldLevel = safeGet(old_variables, 'stat_data.主角.等级', 1);
   const isInitDryRun = getLastMessageId() <= 2;

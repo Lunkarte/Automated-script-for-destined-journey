@@ -87,9 +87,9 @@ const init = async (): Promise<void> => {
   eventOn(tavern_events.MESSAGE_SENT, injectEventPrompts);
   eventOn(tavern_events.MESSAGE_UPDATED, injectEventPrompts);
   eventOn(getButtonEvent('查看成就'), achievement);
-  console.log('[命定之诗] 脚本已加载 ฅ\'ω\'ฅ');
-  toastr.success('[命定之诗] 脚本已加载 ฅ\'ω\'ฅ');
-  eventEmit("[命定之诗] 脚本已加载");
+  console.log("[命定之诗] 脚本已加载 ฅ'ω'ฅ");
+  toastr.success("[命定之诗] 脚本已加载 ฅ'ω'ฅ");
+  eventEmit('[命定之诗] 脚本已加载');
 };
 
 // 使用 jQuery 的 ready 事件启动

@@ -5,7 +5,16 @@
 import { klona } from 'klona';
 
 /** 需要清理的注入 ID 列表 */
-const InjectIdsToRemove = ['属性点获得', '等级提升', 'NPC等级提升', '同伴种族', '主角种族', '当前所在地点', '当前时间', '事件提示'] as const;
+const InjectIdsToRemove = [
+  '属性点获得',
+  '等级提升',
+  'NPC等级提升',
+  '同伴种族',
+  '主角种族',
+  '当前所在地点',
+  '当前时间',
+  '事件提示',
+] as const;
 
 /**
  * 清理旧的注入提示
@@ -41,7 +50,7 @@ export const createPromptInjection = (
     position?: 'none' | 'in_chat';
     depth?: number;
     role?: 'system' | 'user' | 'assistant';
-  },
+  }
 ): InjectionPrompt => {
   const { position = 'none', depth = 0, role = 'system' } = options ?? {};
 
@@ -65,10 +74,12 @@ export const injectMultiplePrompts = (
     position?: 'none' | 'in_chat';
     depth?: number;
     role?: 'system' | 'user' | 'assistant';
-  }>,
+  }>
 ): void => {
-  const formattedPrompts = _.map(prompts, ({ id, content, position = 'none', depth = 0, role = 'system' }) =>
-    createPromptInjection(id, content, { position, depth, role }),
+  const formattedPrompts = _.map(
+    prompts,
+    ({ id, content, position = 'none', depth = 0, role = 'system' }) =>
+      createPromptInjection(id, content, { position, depth, role })
   );
 
   injectPrompts(formattedPrompts);

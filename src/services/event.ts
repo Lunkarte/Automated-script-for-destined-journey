@@ -27,7 +27,7 @@ export const processEvent = (current_variables: MessageVariables): void => {
   // 同步已完成事件到 date
   insertOrAssignVariables(
     { date: { event: { completed_events: completedEvents } } },
-    { type: 'message' },
+    { type: 'message' }
   );
 
   // 事件开启处理
@@ -35,7 +35,7 @@ export const processEvent = (current_variables: MessageVariables): void => {
     // 更新事件缓存信息
     insertOrAssignVariables(
       { date: { event: { cache: `当前事件为${eventTitle}，当前步骤为${eventStep}` } } },
-      { type: 'message' },
+      { type: 'message' }
     );
   }
 

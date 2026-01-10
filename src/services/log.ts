@@ -101,7 +101,10 @@ export const recordIllegalLevelUp = (): void => {
   }
 
   // 使用 insertOrAssignVariables 持久化
-  insertOrAssignVariables({ date: { log: { illegalLevelUpId: log.illegalLevelUpId } } }, { type: 'message' });
+  insertOrAssignVariables(
+    { date: { log: { illegalLevelUpId: log.illegalLevelUpId } } },
+    { type: 'message' }
+  );
 };
 
 /**
@@ -123,14 +126,17 @@ export const logSystem = (
 
   // 使用 insertOrAssignVariables 持久化 date.log 到消息楼层变量
   // 只更新本函数管理的字段，避免覆盖 recordIllegalLevelUp 更新的 illegalLevelUpCount
-  insertOrAssignVariables({
-    date: {
-      log: {
-        deathCount: log.deathCount,
-        maxCurrencyDebt: log.maxCurrencyDebt,
-        bankruptcyCount: log.bankruptcyCount,
-        totalFPGained: log.totalFPGained,
-      }
-    }
-  }, { type: 'message' });
+  insertOrAssignVariables(
+    {
+      date: {
+        log: {
+          deathCount: log.deathCount,
+          maxCurrencyDebt: log.maxCurrencyDebt,
+          bankruptcyCount: log.bankruptcyCount,
+          totalFPGained: log.totalFPGained,
+        },
+      },
+    },
+    { type: 'message' }
+  );
 };

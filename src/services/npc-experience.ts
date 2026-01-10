@@ -17,7 +17,10 @@ import { injectMultiplePrompts, safeGet } from '../utils';
  * @param new_variables - 更新后的变量数据
  * @param old_variables - 更新前的变量数据（由 MVU 事件提供）
  */
-export const processNPCExperienceAndLevel = (new_variables: MessageVariables, old_variables: MessageVariables): void => {
+export const processNPCExperienceAndLevel = (
+  new_variables: MessageVariables,
+  old_variables: MessageVariables
+): void => {
   const destined = safeGet(new_variables, 'stat_data.命定系统.命定之人', {} as Record<string, any>);
   const requiresContract = safeGet(new_variables, 'date.requiresContractForExp', true);
 
@@ -44,7 +47,7 @@ export const processNPCExperienceAndLevel = (new_variables: MessageVariables, ol
   });
 
   // 同步：删除 date.npcs 中存在但命定之人中不存在的对象
-  _.forEach(_.keys(dateNpcs), (name) => {
+  _.forEach(_.keys(dateNpcs), name => {
     if (!destined[name]) {
       _.unset(dateNpcs, name);
     }
@@ -61,7 +64,7 @@ export const processNPCExperienceAndLevel = (new_variables: MessageVariables, ol
     const oldNpcLevel = safeGet(
       old_variables,
       `stat_data.命定系统.命定之人.${name}.等级`,
-      undefined as number | undefined,
+      undefined as number | undefined
     );
     const isManualLevelSet = typeof oldNpcLevel !== 'number' || oldNpcLevel !== npc.等级;
 
@@ -86,7 +89,8 @@ export const processNPCExperienceAndLevel = (new_variables: MessageVariables, ol
     const shouldProcessExp = !isInitDryRun && !isManualLevelSet;
 
     // 经验增加：在场 + 经验增量 > 0 + （需要契约时要已缔结）
-    const canGainExp = shouldProcessExp && npc.是否在场 && deltaExp > 0 && (!requiresContract || npc.是否缔结契约);
+    const canGainExp =
+      shouldProcessExp && npc.是否在场 && deltaExp > 0 && (!requiresContract || npc.是否缔结契约);
     if (canGainExp) {
       _.set(npcData, 'exp', npcData.exp + deltaExp);
     }

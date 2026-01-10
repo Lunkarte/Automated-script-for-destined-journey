@@ -2,7 +2,13 @@
  * 玩家经验与升级服务
  */
 
-import { AttributeKeys, GameConfig, getMilestoneForLevel, getRequiredXpForLevel, isMaxLevel } from '../config';
+import {
+  AttributeKeys,
+  GameConfig,
+  getMilestoneForLevel,
+  getRequiredXpForLevel,
+  isMaxLevel,
+} from '../config';
 import type { MessageVariables } from '../types';
 import { injectMultiplePrompts, safeGet } from '../utils';
 import { canBreakAscensionLevel } from './ascension';
@@ -13,10 +19,19 @@ import { canBreakAscensionLevel } from './ascension';
  * @param new_variables - 更新后的变量数据
  * @param old_variables - 更新前的变量数据（由 MVU 事件提供）
  */
-export const processExperienceAndLevel = (new_variables: MessageVariables, old_variables: MessageVariables): void => {
+export const processExperienceAndLevel = (
+  new_variables: MessageVariables,
+  old_variables: MessageVariables
+): void => {
   const character = safeGet(new_variables, 'stat_data.主角', {} as any);
   const initialLevel = safeGet(old_variables, 'stat_data.主角.等级', character.等级);
-  const promptsToInject: Array<{ id: string; content: string; position?: 'none' | 'in_chat'; depth?: number; role?: 'system' }> = [];
+  const promptsToInject: Array<{
+    id: string;
+    content: string;
+    position?: 'none' | 'in_chat';
+    depth?: number;
+    role?: 'system';
+  }> = [];
 
   // 升级处理循环
   while (character.累计经验值 >= Number(character.升级所需经验) && !isMaxLevel(character.等级)) {
@@ -35,7 +50,8 @@ export const processExperienceAndLevel = (new_variables: MessageVariables, old_v
       _.set(character, '属性点', safeGet(character, '属性点', 0) + 1);
       promptsToInject.push({
         id: '属性点获得',
-        content: 'core_system: The {{user}} has reached a specific level and obtained attribute points. Guide the {{user}} to use attribute points',
+        content:
+          'core_system: The {{user}} has reached a specific level and obtained attribute points. Guide the {{user}} to use attribute points',
         position: 'in_chat',
         role: 'system',
       });
@@ -44,7 +60,7 @@ export const processExperienceAndLevel = (new_variables: MessageVariables, old_v
     // 里程碑加成
     const milestone = getMilestoneForLevel(character.等级);
     if (milestone) {
-      _.forEach(AttributeKeys, (attrKey) => {
+      _.forEach(AttributeKeys, attrKey => {
         const currentAttr = safeGet(character, `属性.${attrKey}`, 0);
         _.set(character, `属性.${attrKey}`, currentAttr + milestone.attributes);
       });

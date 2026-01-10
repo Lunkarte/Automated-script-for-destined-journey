@@ -76,7 +76,10 @@ export const getAscensionCounts = (ascension: Record<string, any>) => {
 };
 
 // 关键等级晋升需要满足登神长阶的突破条件
-export const canBreakAscensionLevel = (current_level: number, variables: MessageVariables): boolean => {
+export const canBreakAscensionLevel = (
+  current_level: number,
+  variables: MessageVariables
+): boolean => {
   if (!AscensionBlockLevels.includes(current_level as (typeof AscensionBlockLevels)[number])) {
     return true;
   }
@@ -104,7 +107,8 @@ export const syncAscensionState = (variables: MessageVariables): void => {
   const character = safeGet(variables, 'stat_data.主角', {} as any);
   const quests = safeGet(variables, 'stat_data.任务列表', {} as QuestList);
   const ascension = safeGet(character, '登神长阶', {} as any);
-  const { elementCount, powerCount, lawCount, hasGodPosition, hasGodNationName } = getAscensionCounts(ascension);
+  const { elementCount, powerCount, lawCount, hasGodPosition, hasGodNationName } =
+    getAscensionCounts(ascension);
   const level = Number(safeGet(character, '等级', 1));
   const expFull = isExpFull(character);
   const extraConditionMet = safeGet(variables, 'date.ascensionExtraConditionMet', false);
