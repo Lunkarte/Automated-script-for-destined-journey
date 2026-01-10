@@ -45,7 +45,7 @@ jobs:
       - name: Get package version
         id: package_version
         if: github.ref_name == 'main'
-        run: echo "version=v$(node -p \"require('./package.json').version\")" >> $GITHUB_OUTPUT
+        run: echo "version=v$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       - name: Check if tag exists
         id: check_tag
