@@ -30,7 +30,8 @@ export const maintainCharacterData = (
   if (!isInitDryRun && oldLevel < character.等级) {
     const requiredXpNumber = Number(safeGet(character, '升级所需经验', 0));
     const expFull =
-      Number.isFinite(requiredXpNumber) && Number(safeGet(character, '累计经验值', 0)) >= requiredXpNumber;
+      Number.isFinite(requiredXpNumber) &&
+      Number(safeGet(character, '累计经验值', 0)) >= requiredXpNumber;
     const isPrewriteLevelUp = expFull && character.等级 === oldLevel + 1;
 
     if (!isPrewriteLevelUp) {
