@@ -26,11 +26,20 @@ export const maintainCharacterData = (
   // 登神长阶开启条件与任务同步
   syncAscensionState(new_variables);
 
-  // 防止等级被非法提升
+  // 防止等级被非法提升（允许经验满且外部预写升级等级）
   if (!isInitDryRun && oldLevel < character.等级) {
-    _.set(character, '等级', oldLevel);
-    recordIllegalLevelUp();
-    toastr.error('等级被AI非法提升,请检查变量更新');
+    const requiredXpNumber = Number(safeGet(character, '升级所需经验', 0));
+    const expFull =
+      Number.isFinite(requiredXpNumber) && Number(safeGet(character, '累计经验值', 0)) >= requiredXpNumber;
+    const isPrewriteLevelUp = expFull && character.等级 === oldLevel + 1;
+
+    if (!isPrewriteLevelUp) {
+      _.set(character, '等级', oldLevel);
+      recordIllegalLevelUp();
+      toastr.warning('等级被AI非法提升,请检查变量更新');
+    } else {
+      _.set(character, '等级', oldLevel);
+    }
   }
 
   // 更新升级所需经验
