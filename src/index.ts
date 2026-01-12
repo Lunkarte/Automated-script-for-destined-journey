@@ -17,6 +17,7 @@ import { processNPCExperienceAndLevel } from './services/npc-experience';
 // Injection
 import { injectEventPrompts } from './injection/event-prompts';
 import { injectGameInfo } from './injection/game-info';
+import { injectLevelPrompts } from './injection/level-prompts';
 
 // Utils
 import { deepClone, errorCatched, uninject } from './utils';
@@ -75,6 +76,15 @@ const handleVariableUpdate = (data: Mvu.MvuData, data_before_update: Mvu.MvuData
 };
 
 /**
+ * 注入所有提示词
+ * 组合函数，在生成前注入所有需要的提示
+ */
+const injectAllPrompts = (): void => {
+  injectEventPrompts();
+  injectLevelPrompts();
+};
+
+/**
  * 初始化脚本
  */
 const init = async (): Promise<void> => {
@@ -83,9 +93,12 @@ const init = async (): Promise<void> => {
 
   // 监听变量更新结束事件
   eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, errorCatched(handleVariableUpdate));
-  eventOn(tavern_events.GENERATION_AFTER_COMMANDS, injectEventPrompts);
-  eventOn(tavern_events.MESSAGE_SENT, injectEventPrompts);
-  eventOn(tavern_events.MESSAGE_UPDATED, injectEventPrompts);
+
+  // 监听生成相关事件，注入提示词
+  eventOn(tavern_events.GENERATION_AFTER_COMMANDS, injectAllPrompts);
+  eventOn(tavern_events.MESSAGE_SENT, injectAllPrompts);
+  eventOn(tavern_events.MESSAGE_UPDATED, injectAllPrompts);
+
   eventOn(getButtonEvent('查看成就'), achievement);
   console.log("[命定之诗] 脚本已加载 ฅ'ω'ฅ");
   toastr.success("[命定之诗] 脚本已加载 ฅ'ω'ฅ");

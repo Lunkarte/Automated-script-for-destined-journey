@@ -9,8 +9,8 @@ import {
   getRequiredXpForLevel,
   isMaxLevel,
 } from '../config';
-import type { MessageVariables } from '../types';
-import { injectMultiplePrompts, safeGet } from '../utils';
+import type { LevelUpData, MessageVariables } from '../types';
+import { safeGet } from '../utils';
 import { canBreakAscensionLevel } from './ascension';
 
 /**
@@ -25,13 +25,9 @@ export const processExperienceAndLevel = (
 ): void => {
   const character = safeGet(new_variables, 'stat_data.主角', {} as any);
   const initialLevel = safeGet(old_variables, 'stat_data.主角.等级', character.等级);
-  const promptsToInject: Array<{
-    id: string;
-    content: string;
-    position?: 'none' | 'in_chat';
-    depth?: number;
-    role?: 'system';
-  }> = [];
+
+  // 记录是否获得属性点
+  let gainedAP = false;
 
   // 升级处理循环
   while (character.累计经验值 >= Number(character.升级所需经验) && !isMaxLevel(character.等级)) {
@@ -48,13 +44,7 @@ export const processExperienceAndLevel = (
     // 属性点获得
     if (character.等级 % GameConfig.ApAcquisitionLevel === 0) {
       _.set(character, '属性点', safeGet(character, '属性点', 0) + 1);
-      promptsToInject.push({
-        id: '属性点获得',
-        content:
-          'core_system: The {{user}} has reached a specific level and obtained attribute points. Guide the {{user}} to use attribute points',
-        position: 'in_chat',
-        role: 'system',
-      });
+      gainedAP = true;
     }
 
     // 里程碑加成
@@ -68,17 +58,22 @@ export const processExperienceAndLevel = (
     }
   }
 
-  // 升级提示
+  // 将升级信息存储到 date.levelUp，供后续注入使用
   if (character.等级 > initialLevel) {
-    promptsToInject.push({
-      id: '等级提升',
-      content: `core_system: The {{user}} level increased from ${initialLevel} to ${character.等级}`,
-      position: 'in_chat',
-      role: 'system',
-    });
-  }
+    const levelUpData: LevelUpData = {
+      character: {
+        fromLevel: initialLevel,
+        toLevel: character.等级,
+        gainedAP,
+      },
+    };
 
-  if (promptsToInject.length > 0) {
-    injectMultiplePrompts(promptsToInject);
+    // 合并现有的 NPC 升级数据（如果有）
+    const existingLevelUp = safeGet(new_variables, 'date.levelUp', {} as LevelUpData);
+    if (existingLevelUp.npcs) {
+      levelUpData.npcs = existingLevelUp.npcs;
+    }
+
+    insertOrAssignVariables({ date: { levelUp: levelUpData } }, { type: 'message' });
   }
 };

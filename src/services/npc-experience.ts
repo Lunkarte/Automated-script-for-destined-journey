@@ -8,8 +8,8 @@
  */
 
 import { getRequiredXpForLevel, getTierForLevel, isMaxLevel, LevelXpTable } from '../config';
-import type { MessageVariables, NpcExpData } from '../types';
-import { injectMultiplePrompts, safeGet } from '../utils';
+import type { LevelUpData, MessageVariables, NpcExpData } from '../types';
+import { safeGet } from '../utils';
 
 /**
  * 处理所有 NPC 的经验与升级
@@ -111,18 +111,18 @@ export const processNPCExperienceAndLevel = (
     }
   });
 
-  // 使用 insertOrAssignVariables 持久化 date.npcs 到消息楼层变量
-  insertOrAssignVariables({ date: { npcs: dateNpcs } }, { type: 'message' });
-
-  // 注入升级提示
+  // 将 NPC 升级信息存储到 date.levelUp，供后续注入使用
   if (levelUpPrompts.length > 0) {
-    injectMultiplePrompts([
-      {
-        id: 'NPC等级提升',
-        content: `core_system: ${levelUpPrompts.join('; ')}`,
-        position: 'none',
-        role: 'system',
-      },
-    ]);
+    const existingLevelUp = safeGet(new_variables, 'date.levelUp', {} as LevelUpData);
+    const levelUpData: LevelUpData = {
+      ...existingLevelUp,
+      npcs: levelUpPrompts,
+    };
+
+    // 使用 insertOrAssignVariables 持久化 date.npcs 和 date.levelUp 到消息楼层变量
+    insertOrAssignVariables({ date: { npcs: dateNpcs, levelUp: levelUpData } }, { type: 'message' });
+  } else {
+    // 仅持久化 date.npcs
+    insertOrAssignVariables({ date: { npcs: dateNpcs } }, { type: 'message' });
   }
 };

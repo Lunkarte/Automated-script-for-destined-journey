@@ -47,6 +47,18 @@ export interface NpcExpData {
   required_exp: number;
 }
 
+/** 升级提示数据类型 - 用于延迟注入升级提示 */
+export interface LevelUpData {
+  /** 主角升级信息 */
+  character?: {
+    fromLevel: number;
+    toLevel: number;
+    gainedAP: boolean;
+  };
+  /** NPC 升级信息列表 */
+  npcs?: string[];
+}
+
 /** 日志数据类型 - 用于跟踪游戏统计 */
 export interface LogData {
   /** 死亡次数 */
@@ -74,6 +86,8 @@ export interface DateData {
   ascensionExtraConditionMet: boolean;
   /** 日志统计数据 */
   log: LogData;
+  /** 升级提示数据 - 用于延迟注入 */
+  levelUp?: LevelUpData;
 }
 
 /** 完整消息楼层变量类型 */
