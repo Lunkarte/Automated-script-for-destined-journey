@@ -2,6 +2,7 @@
  * 事件提示注入模块
  * 向上下文注入事件相关的提示信息
  */
+import type { MessageVariables } from '../types';
 import { injectMultiplePrompts } from '../utils';
 
 /**
@@ -11,8 +12,7 @@ import { injectMultiplePrompts } from '../utils';
  * - 事件链激活提示
  *
  */
-export const injectEventPrompts = (): void => {
-  const variables = getVariables({ type: 'message', message_id: -2 });
+export const injectEventPrompts = (variables: MessageVariables): void => {
   // 获取已完成事件列表
   const completedEvents: string[] = variables.date.event.completed_events;
 

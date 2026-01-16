@@ -7,7 +7,7 @@
  * - 本模块在 User 消息发送前读取 date.levelUp 并注入提示
  * - 注入后清理 date.levelUp，确保提示只出现一次
  */
-import type { LevelUpData } from '../types';
+import type { LevelUpData, MessageVariables } from '../types';
 import { injectMultiplePrompts, safeGet } from '../utils';
 
 /**
@@ -16,9 +16,7 @@ import { injectMultiplePrompts, safeGet } from '../utils';
  * - 属性点获得提示
  * - NPC 等级提升提示
  */
-export const injectLevelPrompts = (): void => {
-  const variables = getVariables({ type: 'message', message_id: -2 });
-
+export const injectLevelPrompts = (variables: MessageVariables): void => {
   // 获取升级数据
   const levelUpData = safeGet(variables, 'date.levelUp', null as LevelUpData | null);
 

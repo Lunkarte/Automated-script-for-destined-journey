@@ -70,8 +70,6 @@ const handleVariableUpdate = (data: Mvu.MvuData, data_before_update: Mvu.MvuData
   processExperienceAndLevel(current, old);
   processNPCExperienceAndLevel(current, old);
   processEvent(current);
-  injectGameInfo(current);
-  injectEventPrompts();
   logSystem(current, old);
 };
 
@@ -80,8 +78,11 @@ const handleVariableUpdate = (data: Mvu.MvuData, data_before_update: Mvu.MvuData
  * 组合函数，在生成前注入所有需要的提示
  */
 const injectAllPrompts = (): void => {
-  injectEventPrompts();
-  injectLevelPrompts();
+  const variables = getVariables({ type: 'message', message_id: -2 }) as MessageVariables;
+
+  injectGameInfo(variables);
+  injectEventPrompts(variables);
+  injectLevelPrompts(variables);
 };
 
 /**
