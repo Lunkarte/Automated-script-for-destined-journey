@@ -26,8 +26,8 @@ export const processNPCExperienceAndLevel = (
   const npcLevelUpWithPlayer = safeGet(new_variables, 'date.npcLevelUpWithPlayer', true);
 
   //如果不允许直接退出函数
-  if(!npcLevelUpWithPlayer){
-    return
+  if (!npcLevelUpWithPlayer) {
+    return;
   }
   // 获取现有的 date.npcs 数据，如果不存在则创建空对象
   const dateNpcs: Record<string, NpcExpData> = safeGet(new_variables, 'date.npcs', {});
