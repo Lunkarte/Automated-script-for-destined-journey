@@ -1,10 +1,10 @@
 /**
  * NPC 经验与升级服务
  *
- * NPC（命定之人）的经验系统：
+ * NPC（关系列表）的经验系统：
  * - 经验数据存储在 date.npcs 中
  * - 经验增量跟随主角的累计经验值变化
- * - 只有「在场」（如果需要契约则「已缔结契约」）的 NPC 才能获得经验
+ * - 只有「在场」（如果需要契约则「命定契约」）的 NPC 才能获得经验
  */
 
 import { getRequiredXpForLevel, getTierForLevel, isMaxLevel, LevelXpTable } from '../config';
@@ -21,7 +21,7 @@ export const processNPCExperienceAndLevel = (
   new_variables: MessageVariables,
   old_variables: MessageVariables
 ): void => {
-  const destined = safeGet(new_variables, 'stat_data.命定系统.命定之人', {} as Record<string, any>);
+  const destined = safeGet(new_variables, 'stat_data.命定系统.关系列表', {} as Record<string, any>);
   const requiresContract = safeGet(new_variables, 'date.requiresContractForExp', true);
   const npcLevelUpWithPlayer = safeGet(new_variables, 'date.npcLevelUpWithPlayer', true);
 
@@ -40,7 +40,7 @@ export const processNPCExperienceAndLevel = (
   // 早期初始化阶段仅同步，不进行经验结算
   const isInitDryRun = getLastMessageId() <= 3;
 
-  // 同步：添加命定之人中存在但 date.npcs 中不存在的对象
+  // 同步：添加关系列表中存在但 date.npcs 中不存在的对象
   _.forEach(destined, (npc, name) => {
     if (!dateNpcs[name]) {
       _.set(dateNpcs, name, {
@@ -51,7 +51,7 @@ export const processNPCExperienceAndLevel = (
     }
   });
 
-  // 同步：删除 date.npcs 中存在但命定之人中不存在的对象
+  // 同步：删除 date.npcs 中存在但关系列表中不存在的对象
   _.forEach(_.keys(dateNpcs), name => {
     if (!destined[name]) {
       _.unset(dateNpcs, name);
@@ -68,7 +68,7 @@ export const processNPCExperienceAndLevel = (
 
     const oldNpcLevel = safeGet(
       old_variables,
-      `stat_data.命定系统.命定之人.${name}.等级`,
+      `stat_data.命定系统.关系列表.${name}.等级`,
       undefined as number | undefined
     );
     const isManualLevelSet = typeof oldNpcLevel !== 'number' || oldNpcLevel !== npc.等级;
@@ -93,9 +93,9 @@ export const processNPCExperienceAndLevel = (
 
     const shouldProcessExp = !isInitDryRun && !isManualLevelSet;
 
-    // 经验增加：在场 + 经验增量 > 0 + （需要契约时要已缔结）
+    // 经验增加：在场 + 经验增量 > 0 + （需要契约时要命定契约为 true）
     const canGainExp =
-      shouldProcessExp && npc.是否在场 && deltaExp > 0 && (!requiresContract || npc.是否缔结契约);
+      shouldProcessExp && npc.在场 && deltaExp > 0 && (!requiresContract || npc.命定契约);
     if (canGainExp) {
       _.set(npcData, 'exp', npcData.exp + deltaExp);
     }
@@ -107,7 +107,7 @@ export const processNPCExperienceAndLevel = (
       _.set(npcData, 'required_exp', getRequiredXpForLevel(npcData.level));
     }
 
-    // 同步升级后的等级回命定之人（使用 _.set 确保写入）
+    // 同步升级后的等级回关系列表（使用 _.set 确保写入）
     if (npc.等级 < npcData.level) {
       levelUpPrompts.push(`${name}从LV${initialLevel}提升到LV${npcData.level}`);
       _.set(npc, '等级', npcData.level);

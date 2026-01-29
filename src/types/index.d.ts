@@ -13,8 +13,8 @@ export type Character = StatData['主角'];
 /** 命定系统类型 */
 export type DestinySystem = StatData['命定系统'];
 
-/** 命定之人类型 */
-export type DestinedOne = DestinySystem['命定之人'][string];
+/** 关系列表类型 */
+export type Partner = DestinySystem['关系列表'][string];
 
 /** 登神长阶类型 */
 export type Ascension = StatData['主角']['登神长阶'];
@@ -105,5 +105,5 @@ export type AttributeKey = '力量' | '敏捷' | '体质' | '智力' | '精神';
 /** 角色属性类型 */
 export type CharacterAttributes = Character['属性'];
 
-/** 命定之人属性类型 */
-export type DestinedOneAttributes = DestinedOne['属性'];
+/** 伙伴属性类型 */
+export type PartnerAttributes = Partner['属性'];

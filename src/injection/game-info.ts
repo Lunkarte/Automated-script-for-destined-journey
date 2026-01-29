@@ -6,18 +6,18 @@
 import type { MessageVariables } from '../types';
 import { injectMultiplePrompts, safeGet } from '../utils';
 
-/** 命定之人数据类型 */
-type DestinedOnesData = MessageVariables['stat_data']['命定系统']['命定之人'];
+/** 关系列表数据类型 */
+type PartnersData = MessageVariables['stat_data']['命定系统']['关系列表'];
 
-/** 默认空命定之人数据 */
-const DefaultDestinedOnes: DestinedOnesData = {};
+/** 默认空关系列表数据 */
+const DefaultPartners: PartnersData = {};
 
 /**
- * 收集在场命定之人的种族列表
+ * 收集在场关系列表的种族列表
  */
-const collectPresentDestinedOnesSpecies = (destined_ones: DestinedOnesData): string[] => {
-  return _.chain(destined_ones)
-    .pickBy(npc => npc?.是否在场)
+const collectPresentPartnersSpecies = (partners: PartnersData): string[] => {
+  return _.chain(partners)
+    .pickBy(npc => npc?.在场)
     .map(npc => npc?.种族)
     .filter(species => !_.isEmpty(species))
     .value();
@@ -25,7 +25,7 @@ const collectPresentDestinedOnesSpecies = (destined_ones: DestinedOnesData): str
 
 /**
  * 注入游戏信息
- * - 在场命定之人的种族列表
+ * - 在场关系列表的种族列表
  * - 用户角色种族
  * - 当前地点
  * - 当前时间
@@ -37,14 +37,14 @@ export const injectGameInfo = (current_variables: MessageVariables): void => {
   const worldLocation = safeGet(current_variables, 'stat_data.世界.地点', '未知');
   const worldTime = safeGet(current_variables, 'stat_data.世界.时间', '未知');
   const characterSpecies = safeGet(current_variables, 'stat_data.主角.种族', '未知');
-  const destinedOnes = safeGet<DestinedOnesData>(
+  const partners = safeGet<PartnersData>(
     current_variables,
-    'stat_data.命定系统.命定之人',
-    DefaultDestinedOnes
+    'stat_data.命定系统.关系列表',
+    DefaultPartners
   );
 
-  // 收集在场命定之人的种族
-  const presentSpecies = collectPresentDestinedOnesSpecies(destinedOnes);
+  // 收集在场关系列表的种族
+  const presentSpecies = collectPresentPartnersSpecies(partners);
 
   // 批量注入游戏信息
   injectMultiplePrompts([

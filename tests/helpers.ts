@@ -50,7 +50,7 @@ export const buildVariables = (overrides: DeepPartial<MessageVariables> = {}): M
       },
       命定系统: {
         命运点数: 0,
-        命定之人: {},
+        关系列表: {},
       },
       新闻: {
         阿斯塔利亚快讯: {
