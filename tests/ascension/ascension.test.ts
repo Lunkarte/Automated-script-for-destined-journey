@@ -220,4 +220,68 @@ describe('ascension tasks', () => {
     syncAscensionState(variables, oldVariables);
     expect(variables.stat_data.主角.背包['༺焰之源质༻']).toBeDefined();
   });
+
+  test('level 20 allows law write when source was consumed externally (had source before)', () => {
+    // 模拟外部先移除源质再写入法则的场景
+    const oldVariables = buildVariables({
+      stat_data: {
+        主角: {
+          等级: 20,
+          背包: {
+            '༺焰之源质༻': { 标签: ['法则源质'] },
+          },
+          登神长阶: {
+            法则: {},
+          },
+        },
+      },
+    });
+    const variables = buildVariables({
+      stat_data: {
+        主角: {
+          等级: 20,
+          背包: {}, // 源质已被外部消耗
+          登神长阶: {
+            法则: { 焰律: { 名称: '焰律' } }, // 法则已写入
+          },
+        },
+      },
+    });
+
+    syncAscensionState(variables, oldVariables);
+    // 因为 oldVariables 中有源质，说明源质刚被消耗用于铸造，法则应保留
+    const laws = variables.stat_data.主角.登神长阶.法则 as Record<string, unknown>;
+    expect(Object.keys(laws)).toHaveLength(1);
+    expect(laws['焰律']).toBeDefined();
+  });
+
+  test('level 20 blocks law write when no source existed before and now', () => {
+    // 从未有过源质的情况下写入法则应被阻止
+    const oldVariables = buildVariables({
+      stat_data: {
+        主角: {
+          等级: 20,
+          背包: {}, // 之前没有源质
+          登神长阶: {
+            法则: {},
+          },
+        },
+      },
+    });
+    const variables = buildVariables({
+      stat_data: {
+        主角: {
+          等级: 20,
+          背包: {}, // 现在也没有源质
+          登神长阶: {
+            法则: { 非法律: { 名称: '非法律' } }, // 非法写入
+          },
+        },
+      },
+    });
+
+    syncAscensionState(variables, oldVariables);
+    // 没有源质历史记录，法则应被清空
+    expect(Object.keys(variables.stat_data.主角.登神长阶.法则)).toHaveLength(0);
+  });
 });

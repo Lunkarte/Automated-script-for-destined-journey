@@ -155,9 +155,12 @@ export const syncAscensionState = (
   const lawSourceReady = lawSourceKeys.length > 0;
   const oldAscension = safeGet(old_variables ?? ({} as any), 'stat_data.主角.登神长阶', {} as any);
   const prevLawCount = _.size(safeGet(oldAscension, '法则', {} as any));
+  const oldBackpack = safeGet(old_variables ?? ({} as any), 'stat_data.主角.背包', {} as any);
+  const hadLawSource = hasLawSourceInBackpack(oldBackpack);
 
   // 未获得法则源质时，禁止在20级阶段写入法则
-  if (level === 20 && lawCount > 0 && !lawSourceReady) {
+  // 如果之前有源质（说明刚被消耗用于铸造法则），允许写入
+  if (level === 20 && lawCount > 0 && !lawSourceReady && !hadLawSource) {
     _.set(character, '登神长阶.法则', {});
   }
 
