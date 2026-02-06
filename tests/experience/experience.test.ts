@@ -136,4 +136,59 @@ describe('experience processing', () => {
     expect(variables.stat_data.主角.等级).toBe(24);
     expect(variables.stat_data.主角.累计经验值).toBe(401840);
   });
+
+  test('level 24 allows upgrade when law and god position both exist', () => {
+    const variables = buildVariables({
+      stat_data: {
+        主角: {
+          等级: 24,
+          累计经验值: 450000,
+          升级所需经验: 401840,
+          登神长阶: {
+            法则: { 焰律: { 名称: '焰律' } },
+            神位: '焰之神座',
+          },
+        },
+      },
+    });
+
+    const oldVariables = buildVariables({
+      stat_data: {
+        主角: {
+          等级: 24,
+        },
+      },
+    });
+
+    processExperienceAndLevel(variables, oldVariables);
+    expect(variables.stat_data.主角.等级).toBe(25);
+  });
+
+  test('level 24 caps exp when law is missing', () => {
+    const variables = buildVariables({
+      stat_data: {
+        主角: {
+          等级: 24,
+          累计经验值: 450000,
+          升级所需经验: 401840,
+          登神长阶: {
+            法则: {},
+            神位: '焰之神座',
+          },
+        },
+      },
+    });
+
+    const oldVariables = buildVariables({
+      stat_data: {
+        主角: {
+          等级: 24,
+        },
+      },
+    });
+
+    processExperienceAndLevel(variables, oldVariables);
+    expect(variables.stat_data.主角.等级).toBe(24);
+    expect(variables.stat_data.主角.累计经验值).toBe(401840);
+  });
 });
