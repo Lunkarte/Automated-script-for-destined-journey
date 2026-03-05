@@ -169,6 +169,10 @@ export const Schema = z.object({
     .prefault({}),
   任务列表: z.record(z.string(), TaskSchema).prefault({}),
   主角: player.prefault({}),
+  主角1: player.prefault({}),
+  主角2: player.prefault({}),
+  主角3: player.prefault({}),
+  主角4: player.prefault({}),
   命定系统: z
     .object({
       命运点数: minLimitedNum(0, 0),
